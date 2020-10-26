@@ -15,6 +15,7 @@ Se usa para implementar **interfaces funcionales**: Son interfaces con SAM (Simp
 Puede implementar uno o más métodos default, pero deberá tener forzosamente un único método abstracto.
 
 ### Ejemplo de interfaces funcionales sin parametros
+
 ```java
 // Ejemplo de interfaz funcional - HelloWorldInterface
 package com.modernjava.lambda;
@@ -24,7 +25,6 @@ public interface HelloWorldInterface {
 }
 
 // Implemetción tradicional de la interfaz funcional - HelloWorldTraditional 
-package com.modernjava.lambda;
 public class HelloWorldTraditional implements HelloWorldInterface {
     @Override
     public String sayHelloWorld() {
@@ -37,7 +37,6 @@ public class HelloWorldTraditional implements HelloWorldInterface {
 }
 
 // Implementación por lambda - Se define el metodo abstracto al mismo momento de usar la interaz 
-package com.modernjava.lambda;
 public class HelloWorldLambda {
     public static void main(String[] args) {
         // Iimplementing sayHelloWorld Using Lambda in one line
@@ -49,6 +48,7 @@ public class HelloWorldLambda {
 ```
 
 ### Ejemplo de interfaces funcionales con parametros
+
 ```java
 // Interfaz funcional con un parametro
 package com.modernjava.lambda;
@@ -59,7 +59,6 @@ public interface IncrementByFiveInterface {
 }
 
 // Impllementación por lambda
-package com.modernjava.lambda;
 public class IncrementByFiveLambda {
     public static void main(String[] args) {
         // Indicamos los parametros que usa dentro de los parentesis, y los podemos usar en su cuerpo
@@ -70,7 +69,6 @@ public class IncrementByFiveLambda {
 }
 
 // Interfaz funcional con más de un parámetro
-package com.modernjava.lambda;
 @FunctionalInterface
 public interface ConcatenateInterface {
     //abstract method
@@ -78,7 +76,6 @@ public interface ConcatenateInterface {
 }
 
 // Implementacion
-package com.modernjava.lambda;
 public class ConcetenateLambda {
     public static void main(String[] args) {
         // Los strings que se pasan por parámetro serán 'a' y 'b'
@@ -91,7 +88,7 @@ public class ConcetenateLambda {
 
 ### Ejemplo de runnable con lambda
 
-```
+```java
 //Runnable Traditional example
 Runnable runnable = new Runnable() {
     @Override
@@ -174,12 +171,12 @@ public static void main(String[] args) throws InterruptedException, ExecutionExc
 }
 ```
 
-## Leccion 2 - Interfaces funcionales
+## Lección 2 - Interfaces funcionales
 
-Una interfaz funcional es una interfaz que contiene un solo metodo abstracto sin implementar.
-Puede contener metodos default y estaticos con implementación, pero solo un método abstracto.
+Una interfaz funcional es una interfaz que contiene un solo método abstracto sin implementar.
+Puede contener métodos default y estáticos con implementación, pero solo un método abstracto.
 
-```
+```java
 // Podemos anotarla como @FunctionalInterface para que el IDE nos verifique que cumple
 // con sus cualidades
 @FunctionalInterface
@@ -195,20 +192,22 @@ public interface IStrategy {
 }
 ```
 
-**Interfaces funcionales útiles:**
-- Consumer
-- Supplier
-- Function
-- Predicate
+### Interfaces funcionales útiles:
+- `Consumer<T>`
+- Métodos por referencia
+- `Supplier`
+- `Function`
+- `Predicate`
 
-### Interfaz funcional `Consumer`
+#### Interfaz funcional `Consumer<T>`
 
 - Parte de `java.util.function`
-- Representa una funcion que toma un argumento y produce un resultado
+- Representa una función que toma un argumento y produce un resultado
+- Con el método 'accept' indicamos que ejecute la función
 
 Ejemplos:
 
-```
+```java
 // Consumer con una sola orden
 // Toma un solo argumento (x) y produce un resultado
 Consumer<String> c = (x) -> System.out.println(x.length() + " the value of x: " + x);
@@ -223,3 +222,91 @@ Consumer<Integer> d = (x) -> {
 d.accept(10);
 
 ```
+
+#### Métodos por referencia
+
+Permite pasar a una interfaz funcional una función que se encuentra en nuestro propio programa.
+De esta forma le indicaremos qué queremos que procese (en caso por ejemplo de un consumer)
+
+```java
+public class Principal {
+ 
+    public static void main(String[] args) {
+     
+        // Metodo 1: Instanciar consumer y ejecutar su accept
+        Consumer<String> consumidor = (x) -> System.out.println(x);
+        consumidor.accept("hola");
+        
+        // Metodo 2: Pasar a metodo que recibe consumer su función y que la procese 
+        procesar((x)->System.out.println(x),"hola2");
+        
+        // METODOS POR REFERENCIA: De esta forma indicamos qué función
+        // queremos que procese, donde la notacion Principal::imprimir
+        // indica el metodo 'imprimir' de la clase Principal (recordar que
+        // un Consumer es un método 
+        procesar(Principal::imprimir,"hola3");
+    }
+ 
+    public static <T> void procesar(Consumer<T> expresion, T mensaje) {
+        expresion.accept(mensaje);
+    }
+ 
+    public static void imprimir(String mensaje) {
+        System.out.println("---------");
+        System.out.println(mensaje);
+        System.out.println("---------");
+    }
+    
+    /* LA CONSOLA SACARÁ:
+    > hola
+    > hola2
+    > ---------
+    > hola3
+    > ---------
+    */
+}
+```
+
+Lo interesante es que si por ejemplo disponemos de otra clase que disponga de un método que reciba un parámetro y no 
+devuelva nada podremos usarla también.
+
+En este caso hemos creado la clase Impresora , podemos utilizar su método imprimir como si fuera una referencia a una 
+expresión lambda.
+
+```java
+public class Impresora {
+    // Método void imprimir que recibe un parámetro -> candidato a Consumer<T>
+    public void imprimir (String mensaje) {
+        System.out.println("imprimiendo impresora");
+        System.out.println(mensaje);
+        System.out.println("imprimiendo impresora");
+    }
+}
+ 
+public class Principal {
+ 
+    public static void main(String[] args) {
+        // Instanciamos un objeto Impresora y pasamos por referencia su método
+        // 'imprimir', que es tipo void
+        Impresora i= new Impresora();
+        procesar(i::imprimir,"hola4");
+    }
+     
+    public static <T> void procesar(Consumer<T> expresion, T mensaje) {
+        expresion.accept(mensaje);
+    }
+     
+    public static void imprimir(String mensaje) {
+        System.out.println("---------");
+        System.out.println(mensaje);
+        System.out.println("---------");
+    }
+    
+    /* LA CONSOLA SACARÁ:
+    > imprimiendo impresora
+    > hola3
+    > imprimiendo impresora
+    */
+}
+```
+
