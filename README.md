@@ -89,36 +89,43 @@ public class ConcetenateLambda {
 ### Ejemplo de runnable con lambda
 
 ```java
-//Runnable Traditional example
-Runnable runnable = new Runnable() {
-    @Override
-    public void run() {
-        int sum = 0;
-        for (int i = 0; i < 10; i++)
-            sum += i;
-        System.out.println("Traditional: " + sum);
+
+private class CallableExample {
+    
+    public static void main(String[] args) {
+
+        //Runnable Traditional example
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                int sum = 0;
+                for (int i = 0; i < 10; i++)
+                    sum += i;
+                System.out.println("Traditional: " + sum);
+            }
+        };
+        new Thread(runnable).start();
+        
+        //Implement using Lambda
+        Runnable runnable1 = () -> {
+            int sum = 0;
+            for (int i = 0; i < 10; i++)
+                sum += i;
+            System.out.println("Runnable Lambda: " + sum);
+        };
+        new Thread(runnable1).start();
+        
+        //Implement using Thread with lambda
+        new Thread(() -> {
+            int sum = 0;
+            for (int i = 0; i < 10; i++)
+                sum = sum + i;
+            System.out.println("Thread Lambda: " + sum);
+        
+        }).start();
+
     }
-};
-new Thread(runnable).start();
-
-//Implement using Lambda
-Runnable runnable1 = () -> {
-    int sum = 0;
-    for (int i = 0; i < 10; i++)
-        sum += i;
-    System.out.println("Runnable Lambda: " + sum);
-};
-new Thread(runnable1).start();
-
-//Implement using Thread with lambda
-new Thread(() -> {
-    int sum = 0;
-    for (int i = 0; i < 10; i++)
-        sum = sum + i;
-    System.out.println("Thread Lambda: " + sum);
-
-}).start();
-
+} 
 ```
 
 ### Ejemplo de Callable con lambda
@@ -126,49 +133,52 @@ new Thread(() -> {
 En este caso nos encontramos con algo muy similar pero usamos el interface Callable. Este interface dispone del método call que es capaz de devolvernos un resultado algo que el método run de un ejecutable no permite.
 
 ```java
-// Crea un array de 0 a 5000 usando la interfaz InStream y el metodo rangeClosed
-public static int[] array = IntStream.rangeClosed(0,5000).toArray();
-// Suma los numeros de 0 a 5000, usando un rango
-public static int total = IntStream.rangeClosed(0,5000).sum();
 
-public static void main(String[] args) throws InterruptedException, ExecutionException {
+private class CallableExample {
     
-    // Crea un callable 
-    Callable callable1 = () -> {
-        int sum=0;
-        for (int i=0;i< array.length/2;i++){
-            sum = sum + array[i];
-        }
-        return sum;
-    };
+    // Crea un array de 0 a 5000 usando la interfaz InStream y el metodo rangeClosed
+    public static int[] array = IntStream.rangeClosed(0,5000).toArray();
+    // Suma los numeros de 0 a 5000, usando un rango
+    public static int total = IntStream.rangeClosed(0,5000).sum();
     
-    // Crea un segundo callable
-    Callable callable2 = () -> {
-        int sum = 0;
-        for (int i=array.length/2; i<array.length;i++){
-            sum = sum + array[i];
-        }
-        return sum;
-    };
-    
-    // Creamos un executor service que ejecutará los callable en un pool
-    ExecutorService executorService = Executors.newFixedThreadPool(2);
-    List<Callable<Integer>> taskList = Arrays.asList(callable1, callable2);
-    
-    // Invocamos todos los hilos del pool a la vez
-    List<Future<Integer>> results = executorService.invokeAll(taskList);
-
-    int k=0;
-    int sum=0;
-    for (Future<Integer> result: results){
-        sum = sum + result.get();
-        System.out.println("Sum of " + ++k + " is: " + result.get());
-    }
-    System.out.println("Sum from the Callable is: " + sum);
-    System.out.println("Correct sum from InStream is: " + total);
-    // Cerramos la ejecución del servicio
-    executorService.shutdown();
-}
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
+        
+            // Crea un callable 
+            Callable callable1 = () -> {
+                int sum=0;
+                for (int i=0;i< array.length/2;i++){
+                    sum = sum + array[i];
+                }
+                return sum;
+            };
+            
+            // Crea un segundo callable
+            Callable callable2 = () -> {
+                int sum = 0;
+                for (int i=array.length/2; i<array.length;i++){
+                    sum = sum + array[i];
+                }
+                return sum;
+            };
+            
+            // Creamos un executor service que ejecutará los callable en un pool
+            ExecutorService executorService = Executors.newFixedThreadPool(2);
+            List<Callable<Integer>> taskList = Arrays.asList(callable1, callable2);
+            
+            // Invocamos todos los hilos del pool a la vez
+            List<Future<Integer>> results = executorService.invokeAll(taskList);
+        
+            int k=0;
+            int sum=0;
+            for (Future<Integer> result: results){
+                sum = sum + result.get();
+                System.out.println("Sum of " + ++k + " is: " + result.get());
+            }
+            System.out.println("Sum from the Callable is: " + sum);
+            System.out.println("Correct sum from InStream is: " + total);
+            // Cerramos la ejecución del servicio
+            executorService.shutdown();
+        }}
 ```
 
 ## Lección 2 - Interfaces funcionales
@@ -194,33 +204,79 @@ public interface IStrategy {
 
 ### Interfaces funcionales útiles:
 - `Consumer<T>`
-- Métodos por referencia
+- Consumidores especializados `IntConsumer, LongConsumer, DoubleConsumer`
+- `BiConsumer`
+- `Predicate`
 - `Supplier`
 - `Function`
-- `Predicate`
+- Métodos por referencia
+- Constructores por referencia
 
 #### Interfaz funcional `Consumer<T>`
 
 - Parte de `java.util.function`
-- Representa una función que toma un argumento y produce un resultado
+- Representa una función que toma **un** argumento y no devuelve un resultado
 - Con el método 'accept' indicamos que ejecute la función
 
-Ejemplos:
+```java
+private class ConsumerExample {
+    public static void main(String[] args) {
+    
+        // Consumer con una sola orden
+        // Toma un solo argumento (x) y produce un resultado
+        Consumer<String> c = (x) -> System.out.println(x.length() + " the value of x: " + x);
+        // Con el metodo 'accept' indicamos que ejecute el método
+        c.accept("Up in the air");
+        
+        //Consumer with block statement
+        Consumer<Integer> d = (x) -> {
+            System.out.println("x*x = " + x*x);
+            System.out.println("x/x = " + x/x);
+        };
+        d.accept(10);
+
+    }
+}
+```
+
+#### Consumidores especializados IntConsumer, LongConsumer, DoubleConsumer
+
+Java dispone de consumidores especializados, que determinan el tipo de argumento que se le puede pasar en el método
+que crea el consumidor
 
 ```java
-// Consumer con una sola orden
-// Toma un solo argumento (x) y produce un resultado
-Consumer<String> c = (x) -> System.out.println(x.length() + " the value of x: " + x);
-// Con el metodo 'accept' indicamos que ejecute el método
-c.accept("Up in the air");
+private class SpecialConsumerExample {
+    public static void main(String[] args) {
 
-//Consumer with block statement
-Consumer<Integer> d = (x) -> {
-    System.out.println("x*x = " + x*x);
-    System.out.println("x/x = " + x/x);
-};
-d.accept(10);
+        IntConsumer intConsumer = (a) -> System.out.println(a*10);
+        intConsumer.accept(10);
+        
+        LongConsumer longConsumer = (a) -> System.out.println(a * 10L);
+        longConsumer.accept(10L);
+        
+        DoubleConsumer doubleConsumer = (a) -> System.out.println(a * 10);
+        doubleConsumer.accept(10.50);
 
+    }
+}
+```
+
+#### BiConsumer
+
+- Parte de `java.util.function`
+- Representa una función que toma **dos** argumentos y no devuelve un resultado
+- Con el método 'accept' indicamos que ejecute la función
+
+```java
+private class BiConsumerExample {
+    public static void main(String[] args) {
+        
+        // Usa dos parametros
+        BiConsumer<Integer,Integer> biConsumer = (x,y) -> System.out.println("x: " + x + " y: " + y);
+        biConsumer.accept(2,4);
+
+    }
+}
 ```
 
 #### Métodos por referencia
@@ -310,3 +366,88 @@ public class Principal {
 }
 ```
 
+#### Constructores por referencia
+
+Podemos usar un metodo por referencia para llamar a un constructor. a diferencia es que aquí llamas al “new” en vez de llamar a un método.
+Si por ejemplo tenemos la clase instructor, podemos cear una factoria de Instructor llamando por referencia
+a su metodo constructor:
+
+```java
+
+// Clase user con un unico constructor
+public class User {
+
+   private String name;
+   private String password;
+
+   public User() {
+   }
+
+   public User(String name) {
+       this.name = name;
+   }
+
+   public User(String name, String pass) {
+       this.name = name;
+       this.password = pass;
+   }
+}
+
+private class ConstructorsByReference {
+    public static void main(String[] args) {
+
+        // Creamos una lista de nombres que queremos usar para crear instancias
+        List<String> userNames = new ArrayList<>();
+        userNames.add("jose");
+        userNames.add("luis");
+        userNames.add("lucas");
+        
+        // Generaremos un stream usando el listado de nombres de usuarios
+        // Lo importante aquí es observar que estamos llamando al constructor por referencia cuando escribimos User::new.
+        Stream<User> userStream = userNames.stream().map(User::new);
+    }
+}
+```
+
+Aquí el compilador elige por iferenencia el constructor que tenga un solo parámetro String porque es el único que aplica.
+Podemos hacer lo mismo con un constructor con más parámetros. Además podemos usar una clase "Factoria" usando su constructor
+por referencia para obtener instancias
+
+```
+// Clase instructor con un constructor con multiples parámetros
+public class Instructor {
+    String name;
+    int yearsOfExperience;
+    String title;
+    String gender;
+    boolean onlineCourses;
+    List<String> courses;
+
+    public Instructor(String name, int yearsOfExperience, String title, String gender, boolean onlineCourses, List<String> courses) {
+        this.name = name;
+        this.yearsOfExperience = yearsOfExperience;
+        this.title = title;
+        this.gender = gender;
+        this.onlineCourses = onlineCourses;
+        this.courses = courses;
+    }
+}
+
+// Interface InstructorFactory con metodo getInstructor
+public interface InstructorFactory {
+    Instructor getInstructor(String name, int yearsOfExperience, String title,
+                             String gender, boolean onlineCourse, List<String> courses);
+}
+
+// Ejemplo de uso de constructor por referencia
+public class ConstructorReferenceExample {
+    public static void main(String[] args) {
+        // Usamos la llamada por referencia a su constructor "new" para el factory
+        InstructorFactory instructorFactory = Instructor::new;
+
+        // El factory usará el constructor con el numero de parametros existente para obtener una instancia 
+        Instructor instructor = instructorFactory.getInstructor("Mike", 10, "Software Developer"
+        , "M", true, Arrays.asList("Java Programming", "C++ Programming", "Python Programming"));
+    }
+}
+```
