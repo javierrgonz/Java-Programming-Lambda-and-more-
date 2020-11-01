@@ -204,11 +204,16 @@ public interface IStrategy {
 
 ### Interfaces funcionales útiles:
 - `Consumer<T>`
-- Consumidores especializados `IntConsumer, LongConsumer, DoubleConsumer`
-- `BiConsumer`
-- `Predicate`
-- `Supplier`
+  - Consumers especializados `IntConsumer, LongConsumer, DoubleConsumee`
+- `BiConsumer<T>`
+- `Predicate<T>`
+  - Predicates especializados `IntPredicate, LongPredicate, DoublePredicate`
+- `BiPredicate<T>`
 - `Function`
+- `Bifunction`
+- `Unary operator`
+- `Binary operator`
+- `Supplier`
 - Métodos por referencia
 - Constructores por referencia
 
@@ -239,7 +244,7 @@ private class ConsumerExample {
 }
 ```
 
-#### Consumidores especializados IntConsumer, LongConsumer, DoubleConsumer
+##### Consumidores especializados IntConsumer, LongConsumer, DoubleConsumer
 
 Java dispone de consumidores especializados, que determinan el tipo de argumento que se le puede pasar en el método
 que crea el consumidor
@@ -275,6 +280,358 @@ private class BiConsumerExample {
         BiConsumer<Integer,Integer> biConsumer = (x,y) -> System.out.println("x: " + x + " y: " + y);
         biConsumer.accept(2,4);
 
+    }
+}
+```
+
+#### Predicados
+
+Son funciones con un solo argumento que devuelven `true` o `false` a traves de un metodo `test`
+El predicado dispone de metodos que permiten incluir más condiciones, o realizar negaciones
+
+```java
+public class PredicateExample {
+    public static void main(String[] args) {
+ 
+        // BASICO
+        // if number is >10 return true other false
+        Predicate<Integer> p1 = (i) -> i>10;
+        System.out.println(p1.test(100));
+    
+        // COMBINACION DE PREDICADOS
+        // i>10 && number is even number (i%2 ==0)
+        Predicate<Integer> p2 = (i) -> i%2==0;
+        System.out.println(p1.and(p2).test(20));
+    
+        // i>10 || number is even number (i%2==0)
+        System.out.println(p1.or(p2).test(4));
+    
+        // MANIPULACION DEL PREDICADO CON NEGACIONES
+        //i>10 && i%2 !=0
+        System.out.println(p1.and(p2.negate()).test(33));
+    }
+}
+```
+
+Un ejemplo de uso: con una clase `Instructor`, podemos usar los predicados para realizar un filtrado
+por condiciones
+
+```java
+public class PredicateExample2 {
+    public static void main(String[] args) {
+
+        //all instructor who teaches online
+        Predicate<Instructor> p1 = (i) -> i.isOnlineCourses()==true;
+        //instructor experience is >10 years
+        Predicate<Instructor> p2 = (i) -> i.getYearsOfExperience() >10;
+
+        // Imprime solo los instructores que cumplan el predicado 1
+        List<Instructor> instructors = Instructors.getAll();
+        instructors.forEach(instructor -> {
+            if (p1.test(instructor)){
+                System.out.println(instructor);
+            }
+        });
+
+        // Imprime solo los instructores que cumplan ambos predicados
+        System.out.println("---------------------");
+        instructors.forEach(instructor ->  {
+            if(p1.and(p2).test(instructor)){
+                System.out.println(instructor);
+            }
+        });
+
+    }
+}
+```
+
+##### Predicados especializados: IntPredicate, DoublePredicate, LongPredicate
+
+Existen predicados especializados para los tipos Int, Double o Long, que condiciona el tipo de
+parametro que se puede pasar al método booleano que define.
+
+
+```java
+public class PredicateExample3 {
+    public static void main(String[] args) {
+        
+        IntPredicate p1 = (i) -> i>100;
+        System.out.println(p1.test(100));
+
+        LongPredicate p2 = (i) -> i>100L;
+        System.out.println(p2.test(1111111111111111111L));
+
+        DoublePredicate p3 = (i) -> i<100.25;
+        DoublePredicate p4 = (i) -> i>100.10;
+        System.out.println(p3.and(p4).test(100.15));
+
+    }
+}
+
+```
+
+##### Predicados y biconsumer
+
+Un ejemplo de implementación de predicados y biconsumers: 
+
+```java
+public class PredicateAndBiConsumerExample {
+    public static void main(String[] args) {
+
+        List<Instructor> instructors = Instructors.getAll();
+
+        // Definimos los predicados como las condiciones para filtrar los instructores
+        Predicate<Instructor> p1 = (i) -> i.isOnlineCourses() == true;
+        Predicate<Instructor> p2 = (i) -> i.getYearsOfExperience() > 10;
+
+        // El biconsumer recibirá dos parámetros para imprimir una serie de valores
+        BiConsumer<String, List<String>> biConsumer = (name, courses) ->
+                System.out.println("name is: " + name + " courses : " + courses);
+    
+        // Finalmente, recorremos el listado de instructores, y en caso de que se cumpla
+        // las condiciones de los predicados, usa el biconsumer para imprimir los valores
+        // del instructor
+        instructors.forEach(instructor -> {
+            if(p1.and(p2).test(instructor))
+                biConsumer.accept(instructor.getName(), instructor.getCourses());
+        });
+    }
+}
+```
+
+#### Bipredicate
+
+De forma similar al Biconsumer, un Bipredicate se trata de un método que acepta dos parámetros y devuelve
+un booleano `true` o `false` como respuesta.
+
+```java
+public class BiPredicateExample {
+    public static void main(String[] args) {
+        
+        List<Instructor> instructors = Instructors.getAll();
+        
+        // BIPREDICADO
+        // En este caso, acepta un booleano y un integer, y la condicion es una
+        // combinación de comprobaciones sobre ambos parámetros
+        BiPredicate<Boolean, Integer> p3 = 
+            (online, experience) -> online == true && experience > 10;
+
+        // Definimos un BICONSUMER que imprime los nombres y cursos
+        BiConsumer<String, List<String>> biConsumer = (name, courses) ->
+                System.out.println("name is: " + name + " courses : " + courses);
+    
+        // Recorremos el listado de instructores, y si cumplen la condicion del
+        // bipredicate, ejecutan el biconsumer 
+        instructors.forEach(instructor -> {
+            if(p3.test(instructor.isOnlineCourses(), instructor.getYearsOfExperience()))
+                biConsumer.accept(instructor.getName(), instructor.getCourses());
+        });
+    }
+}
+
+```
+
+#### Function
+
+Parte de java.util.function. Representa una función que usa un argumento y devuelve un resultado.
+Dispone de un método `apply` que ejecuta la función.
+
+Dispone de dos metodos auxiliares para la composiciónd de funciones complejas:
+- `andThen`: crea una función nueva que combina dos funciones, ejecutando primero la que llama al método andThen y 
+después la segunda. Por ejemplo, `functionA.andThen(functionB)` ejecuta primero la `functionA` y después la `functionB`
+- `compose`: actua al revés, ejecutará primero la que se pasa por parámetro. En el ejemplo anterior, ejecuta la 
+`functionB` después de la `functionA` 
+
+```java
+public class FunctionExample {
+    public static void main(String[] args) {
+
+        // FUNCTION
+        // En este caso, recoge un Integer 'n' y devuelve un Double
+        //        in       out
+        //         |        |
+        Function<Integer, Double> sqrt = n -> Math.sqrt(n);
+
+        // Ejecutamos la función con el método `apply`
+        System.out.println("Square root of 64: " + sqrt.apply(64));
+        System.out.println("Square root of 81: " + sqrt.apply(81));
+
+        // FUNCTION
+        // Aquí recoge un String y devuelve un String en minusculas
+        //        in      out
+        //         |       |
+        Function<String,String> lowercaseFunction = s1 -> s1.toLowerCase();
+        System.out.println(lowercaseFunction.apply("PROGRAMMING"));
+        
+        // COMBINACIÓN DE FUNCTIONS
+        // Podemos combinar funciones usando los métodos de el objeto `Function`.
+        // Por ejemplo disponemos del metodo `andThen` que e        
+        Function<String, String> concatFunction = (s) -> s.concat(" In Java");
+        System.out.println(lowercaseFunction.andThen(concatFunction).apply("PROGRAMMING"));
+        System.out.println(lowercaseFunction.compose(concatFunction).apply("PROGRAMMING"));
+
+    }
+}
+```
+
+Un ejemplo de una `function` compleja:
+
+```java
+public class FunctionExample2 {
+    public static void main(String[] args) {
+
+        // Predicate will return true if instructor has online courses
+        Predicate<Instructor> p1 = (i) -> i.isOnlineCourses()==true;
+    
+        // Esta function recibe un listado de instructors y devuelve un mapa de los
+        // que cumplen la condición del predicado definida arriba
+        //               in                  out
+        //                |                   |
+        Function<List<Instructor>, Map<String,Integer>> mapFunction = 
+            // Con el parámetro de entrada realizamos una operación
+            (instructors -> {
+                Map<String,Integer> map = new HashMap<>();
+                instructors.forEach(instructor -> {
+                    if(p1.test(instructor)) {
+                        map.put(instructor.getName(), instructor.getYearsOfExperience());
+                    }
+                });
+                return map;
+        });
+    
+        // Ejecución de la function con apply
+        System.out.println(mapFunction.apply(Instructors.getAll()));
+    }
+}
+```
+
+#### Bifunction
+
+En este caso, la función recibe dos argumentos y devuelve una respuesta
+
+```java
+public class BiFunctionExample {
+    public static void main(String[] args) {
+    
+        Predicate<Instructor> p1 = (i) -> i.isOnlineCourses() == true;
+    
+        // BIFUNCTION
+        // Recibe dos parámetros y devuelve un resultado después de hacer una operación
+        //              in                  in                  out 
+        //               |                   |                   |
+        BiFunction<List<Instructor>, Predicate<Instructor>, Map<String,Integer>> mapBiFunction =
+            // Con los dos parámetros realizamos una compribación y rellenamos el mapa de salida
+            ((instructors, instructorPredicate) -> {
+                Map<String, Integer> map = new HashMap<>();
+                instructors.forEach(instructor -> {
+                    if(instructorPredicate.test(instructor)){
+                        map.put(instructor.getName(), instructor.getYearsOfExperience());
+                    }
+                });
+                return map;
+            });
+        System.out.println(mapBiFunction.apply(Instructors.getAll(), p1));
+    }
+}
+```
+
+#### Unary operator
+
+El `unary operator` extiende de Function, y es una función que recibe un argumento y devuelve un resultado del mismo
+tipo del parámetro de entrada.
+Suele usarse para encadenar operaciones.
+
+Existen distintos tipos especializados: IntUnaryOperator, LongUnaryOperator, DoubleUnaryOperator
+
+```java
+public class UnaryOperatorExample {
+
+    public static void main(String[] args) {
+
+        // UnaryOperator con un tipo Integer. Solo hay que informar del tipo de entrada
+        UnaryOperator<Integer> unary = i -> i * 10;
+        System.out.println(unary.apply(100));
+
+        // Function equivalente al UnaryOperation anterior. 
+        // Informa del tipo de entrada in y out
+        Function<Integer, Integer> function = i -> i*10;
+        System.out.println(function.apply(100));
+
+        // UnaryOperation especializados: IntUnaryOperator
+        // No hace falta informar del tipo de entrada ni de salida
+        IntUnaryOperator intUnaryOperator = i -> i *10;
+        System.out.println(intUnaryOperator.applyAsInt(100));
+
+        // UnaryOperation especializados: LongUnaryOperator
+        LongUnaryOperator longUnaryOperator = i -> i*10;
+        System.out.println(longUnaryOperator.applyAsLong(10000000000000000l));
+
+        // UnaryOperation especializados: DoubleUnaryOperator
+        DoubleUnaryOperator doubleUnaryOperator = i -> i*10;
+        System.out.println(doubleUnaryOperator.applyAsDouble(2000000.20000000));
+    }
+}
+```
+
+Un ejemplo de encadenado de UnaryOperators:
+
+```java
+public class Java8UnaryOperator3 {
+
+    public static void main(String[] args) {
+
+        List<Integer> list = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+
+        // Definimos los UnaryOperators
+        UnaryOperator<Integer> uo = x -> x * 2;
+        UnaryOperator<Integer> uo2 = x -> x + 1;
+
+        // Para cada elemento de la lista, aplicamos primero el uo y luego el uo2  
+        for (T t : list) {
+            result.add(uo.andThen(uo2).apply(t));
+        }
+    }
+}
+```
+
+#### BinaryOperator
+
+Es una interfaz funcional que toma dos parametros y devuelve un único valor. 
+**Los parametros de entrada y la salida deben ser del mismo tipo**
+Se usa mucho para opeaciones matematicas que devuelven parámetros del mismo tipo que la entrada
+
+Dispone de especialidades **IntBinaryOperator**, **LongBinaryOperator** y **DoubleBinaryOperator**
+
+```java
+public class BinaryOperatorExample {
+    public static void main(String[] args) {
+
+        // Define BinaryOperator con un Integer. En este caso toma dos Integer
+        // a,b y devuelve la suma de ambos
+        BinaryOperator<Integer> binaryOperator = (a,b) -> a + b;
+        System.out.println(binaryOperator.apply(2,4));
+
+        // Definimos un comparator que compare a con b y devuelva uno de ellos segun
+        // una condicion establecida mediante un BinaryOperator
+        Comparator<Integer> comparator = (a,b) -> a.compareTo(b);
+        // Definimos un binaryoperator integer predefinido por java, que coja el 
+        // comparator y le establezca la condición 'maxBy', es decir, devuelveme el
+        // maximo de estos 
+        BinaryOperator<Integer> maxBi = BinaryOperator.maxBy(comparator);
+        // Ejecutamos el binaryOperator
+        System.out.println(maxBi.apply(7,8));
+
+        BinaryOperator<Integer> minBy = BinaryOperator.minBy(comparator);
+        System.out.println(minBy.apply(7,8));
+
+        IntBinaryOperator intBi = (a,b) -> a*b;
+        System.out.println(intBi.applyAsInt(2,4));
+
+        LongBinaryOperator longBi = (a,b) -> a*b;
+        System.out.println(longBi.applyAsLong(20000000l, 22222222222222222l));
+
+        DoubleBinaryOperator doubleBi = (a,b) -> a*b;
+        System.out.println(doubleBi.applyAsDouble(2222.22222, 22222222222222.22222));
     }
 }
 ```
@@ -413,7 +770,7 @@ Aquí el compilador elige por iferenencia el constructor que tenga un solo pará
 Podemos hacer lo mismo con un constructor con más parámetros. Además podemos usar una clase "Factoria" usando su constructor
 por referencia para obtener instancias
 
-```
+```java
 // Clase instructor con un constructor con multiples parámetros
 public class Instructor {
     String name;
