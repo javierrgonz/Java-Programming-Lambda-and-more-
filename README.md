@@ -203,21 +203,22 @@ public interface IStrategy {
 ```
 
 ### Interfaces funcionales útiles:
-- `Consumer<T>`
-  - Consumers especializados `IntConsumer, LongConsumer, DoubleConsumee`
-- `BiConsumer<T>`
-- `Predicate<T>`
-  - Predicates especializados `IntPredicate, LongPredicate, DoublePredicate`
-- `BiPredicate<T>`
-- `Function`
-- `Bifunction`
-- `Unary operator`
-- `Binary operator`
-- `Supplier`
-- Métodos por referencia
-- Constructores por referencia
+- [`Consumer<T>`](#consumer)
+  - [Consumers especializados `IntConsumer, LongConsumer, DoubleConsumee`](#consumer_especializados)
+- [`BiConsumer<T>`](#biconsumer)
+- [`Predicate<T>`](#predicate)
+  - [Predicates especializados `IntPredicate, LongPredicate, DoublePredicate`](#predicate_especializado)
+  - [Predicates y biconsumers](#predicates-y-biconsumer)
+- [`BiPredicate<T>`](#bipredicate)
+- [`Function`](#function)
+- [`Bifunction`](#bifunction)
+- [`Unary operator`](#unary_operator)
+- [`Binary operator`](#binary_operator)
+- [`Supplier`](#supplier)
+- [Métodos por referencia](#metodos_por_referencia)
+- [Constructores por referencia](#constructores-por-referencia)
 
-#### Interfaz funcional `Consumer<T>`
+#### Interfaz funcional `Consumer<T>`<a name="consumer"></a>
 
 - Parte de `java.util.function`
 - Representa una función que toma **un** argumento y no devuelve un resultado
@@ -244,7 +245,7 @@ private class ConsumerExample {
 }
 ```
 
-##### Consumidores especializados IntConsumer, LongConsumer, DoubleConsumer
+##### Consumidores especializados IntConsumer, LongConsumer, DoubleConsumer<a name="consumer_especializados"></a>
 
 Java dispone de consumidores especializados, que determinan el tipo de argumento que se le puede pasar en el método
 que crea el consumidor
@@ -266,7 +267,7 @@ private class SpecialConsumerExample {
 }
 ```
 
-#### BiConsumer
+#### BiConsumer<a name="biconsumer"></a>
 
 - Parte de `java.util.function`
 - Representa una función que toma **dos** argumentos y no devuelve un resultado
@@ -284,7 +285,7 @@ private class BiConsumerExample {
 }
 ```
 
-#### Predicados
+#### Predicados<a name="predicate"></a>
 
 Son funciones con un solo argumento que devuelven `true` o `false` a traves de un metodo `test`
 El predicado dispone de metodos que permiten incluir más condiciones, o realizar negaciones
@@ -345,7 +346,7 @@ public class PredicateExample2 {
 }
 ```
 
-##### Predicados especializados: IntPredicate, DoublePredicate, LongPredicate
+##### Predicados especializados: IntPredicate, DoublePredicate, LongPredicate<a name="predicate_especializados"></a>
 
 Existen predicados especializados para los tipos Int, Double o Long, que condiciona el tipo de
 parametro que se puede pasar al método booleano que define.
@@ -370,7 +371,7 @@ public class PredicateExample3 {
 
 ```
 
-##### Predicados y biconsumer
+##### Predicados y biconsumer<a name="predicates-y-biconsumer"></a>
 
 Un ejemplo de implementación de predicados y biconsumers: 
 
@@ -399,7 +400,7 @@ public class PredicateAndBiConsumerExample {
 }
 ```
 
-#### Bipredicate
+#### Bipredicate<a name="bipredicate"></a>
 
 De forma similar al Biconsumer, un Bipredicate se trata de un método que acepta dos parámetros y devuelve
 un booleano `true` o `false` como respuesta.
@@ -431,7 +432,7 @@ public class BiPredicateExample {
 
 ```
 
-#### Function
+#### Function<a name="function"></a>
 
 Parte de java.util.function. Representa una función que usa un argumento y devuelve un resultado.
 Dispone de un método `apply` que ejecuta la función.
@@ -505,7 +506,7 @@ public class FunctionExample2 {
 }
 ```
 
-#### Bifunction
+#### Bifunction<a name="bifunction"></a>
 
 En este caso, la función recibe dos argumentos y devuelve una respuesta
 
@@ -535,7 +536,7 @@ public class BiFunctionExample {
 }
 ```
 
-#### Unary operator
+#### Unary operator<a name="unary_operator"></a>
 
 El `unary operator` extiende de Function, y es una función que recibe un argumento y devuelve un resultado del mismo
 tipo del parámetro de entrada.
@@ -594,7 +595,7 @@ public class Java8UnaryOperator3 {
 }
 ```
 
-#### BinaryOperator
+#### BinaryOperator<a name="binary_operator"></a>
 
 Es una interfaz funcional que toma dos parametros y devuelve un único valor. 
 **Los parametros de entrada y la salida deben ser del mismo tipo**
@@ -636,7 +637,52 @@ public class BinaryOperatorExample {
 }
 ```
 
-#### Métodos por referencia
+#### Supplier<a name="supplier"></a>
+
+Intefaz funcional que proporciona un valor de cualquier tipo. 
+Podria entenderse como una factoría de valores de un tipo concreto.
+
+```java
+public class SupplierExample {
+    public static void main(String[] args) {
+    
+        // Método que devuelve un integer aleatorio
+        Supplier<Integer> supplier = () -> (int) (Math.random() * 1000);
+        System.out.println(supplier.get());
+        System.out.println(supplier.get());
+    }
+}
+```
+
+#### Métodos por referencia<a name="metodos-por-referencia"></a>
+
+Es un atajo en notación lambda que permite llamar a un método
+Existen 3 tipos:
+
+- `Class::staticMethod` - Referencia a un método estatico
+- `object::instanceMthod` - Referencia a un método de instancia
+- `Class::new` - Referencia a un constructor
+
+No se puede convertir:
+- `(a) -> System.out.println(a*10)` 
+
+```java
+public class MethodReferenceExample {
+    public static void main(String[] args) {
+
+        // Ejemplo con predicate
+        Predicate<Instructor> p1 = instructor -> instructor.isOnlineCourses();
+        Predicate<Instructor> p2 = Instructor::isOnlineCourses;
+
+        // Ejemplo con funciones
+        Function<Integer, Double> sqrt= a -> Math.sqrt(a);
+        Function<Integer, Double> sqrt1 = Math::sqrt;
+
+        Function<String, String> lowercaseFunction = s -> s.toLowerCase();
+        Function<String, String> lowercaseFunction1 = String::toLowerCase;
+   }
+}
+```
 
 Permite pasar a una interfaz funcional una función que se encuentra en nuestro propio programa.
 De esta forma le indicaremos qué queremos que procese (en caso por ejemplo de un consumer)
@@ -723,52 +769,40 @@ public class Principal {
 }
 ```
 
-#### Constructores por referencia
+#### Constructores por referencia<a name="constructor-por-referencia"></a>
 
-Podemos usar un metodo por referencia para llamar a un constructor. a diferencia es que aquí llamas al “new” en vez de llamar a un método.
-Si por ejemplo tenemos la clase instructor, podemos cear una factoria de Instructor llamando por referencia
-a su metodo constructor:
+Solo puede usarse en el contexto de una `interfaz funcional`, es decir, no podemos crear 
+una instancia de una clase de esta forma:
+
+    `Instructor inst = Instructor::new`
+
+No obstante, podemos instanciar un objeto como este, pero la interfaz debe ser una interfaz
+funcional:
+
+    `InstructorFactory insFac = Instructor::new`
+
+Para usar la referencia por constructor, debes definir una interfaz funcional con un metodo
+abstracto cuyo tipo devuelto es el mismo que el del objeto que queremos usar el constructor
+por referencia
 
 ```java
-
-// Clase user con un unico constructor
-public class User {
-
-   private String name;
-   private String password;
-
-   public User() {
-   }
-
-   public User(String name) {
-       this.name = name;
-   }
-
-   public User(String name, String pass) {
-       this.name = name;
-       this.password = pass;
-   }
-}
-
-private class ConstructorsByReference {
+public class ConstructorReferenceExample {
     public static void main(String[] args) {
-
-        // Creamos una lista de nombres que queremos usar para crear instancias
-        List<String> userNames = new ArrayList<>();
-        userNames.add("jose");
-        userNames.add("luis");
-        userNames.add("lucas");
         
-        // Generaremos un stream usando el listado de nombres de usuarios
-        // Lo importante aquí es observar que estamos llamando al constructor por referencia cuando escribimos User::new.
-        Stream<User> userStream = userNames.stream().map(User::new);
+        // Creamos la factoria pasando el metodo constructor por refrencia
+        InstructorFactory instructorFactory = Instructor::new;
+
+        // Instanciamos el objeto con la factoria
+        Instructor instructor = instructorFactory.getInstructor("Mike", 10, "Software Developer"
+        , "M", true, Arrays.asList("Java Programming", "C++ Programming", "Python Programming"));
+
+        System.out.println(instructor);
     }
 }
 ```
 
-Aquí el compilador elige por iferenencia el constructor que tenga un solo parámetro String porque es el único que aplica.
-Podemos hacer lo mismo con un constructor con más parámetros. Además podemos usar una clase "Factoria" usando su constructor
-por referencia para obtener instancias
+El compilador elige por iferenencia el constructor que tenga un solo parámetro String porque es el único que aplica.
+Podemos hacer lo mismo con un constructor con más parámetros. 
 
 ```java
 // Clase instructor con un constructor con multiples parámetros
