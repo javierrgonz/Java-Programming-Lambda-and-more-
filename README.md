@@ -14,7 +14,7 @@ Las expresiones lambda tienen las siguientes partes:
 Se usa para implementar **interfaces funcionales**: Son interfaces con SAM (Simple Abstract Method). 
 Puede implementar uno o más métodos default, pero deberá tener forzosamente un único método abstracto.
 
-### Ejemplo de interfaces funcionales sin parametros
+### Ejemplo de Expresiones Lambda sin parametros
 
 ```java
 // Ejemplo de interfaz funcional - HelloWorldInterface
@@ -47,7 +47,7 @@ public class HelloWorldLambda {
 }
 ```
 
-### Ejemplo de interfaces funcionales con parametros
+### Ejemplo de Expresiones Lambda con parametros
 
 ```java
 // Interfaz funcional con un parametro
@@ -86,7 +86,7 @@ public class ConcetenateLambda {
 
 ```
 
-### Ejemplo de runnable con lambda
+### Ejemplo de runnable con Expresiones Lambda
 
 ```java
 
@@ -128,7 +128,7 @@ private class CallableExample {
 } 
 ```
 
-### Ejemplo de Callable con lambda
+### Ejemplo de Callable con Expresiones Lambda
 
 En este caso nos encontramos con algo muy similar pero usamos el interface Callable. Este interface dispone del método call que es capaz de devolvernos un resultado algo que el método run de un ejecutable no permite.
 
@@ -179,6 +179,30 @@ private class CallableExample {
             // Cerramos la ejecución del servicio
             executorService.shutdown();
         }}
+```
+
+### Scopes en Expresiones Lambda
+
+- El cuerpo de la expresión tiene el mismo scope que un bloque anidado
+- No se puede declarar un parámetro o variable local en la función lambda que tenga el mismo nombre que una 
+variable local
+- No se puede modificar la variable local dentro de la expresión lambda
+- No hay restriccion por nivel de clase o variable instantánea
+
+#### Effectively Final
+
+En lambda podemos usar una variable local pero no se puede modificar la variable aunque no sea declarada
+`final`. A esto se llama `effectively Final`.
+
+Por ejemplo:
+
+```java
+int k = 10;
+List<Instructor> inst = Instructors.getAll();
+
+instructors.forEach(instructor -> {
+    System.out.println(instructor + k++); // ERROR al tratar de modificar k
+});
 ```
 
 ## Lección 2 - Interfaces funcionales
@@ -869,10 +893,114 @@ public class ConstructorReferenceExample {
 }
 ```
 
-### Scopes en expresiones lambda
+## Lección 3 - Stream
 
-- El cuerpo de la expresión tiene el mismo scope que un bloque anidado
-- No se puede declarar un parámetro o variable local en la función lambda que tenga el mismo nombre que una 
-variable local
-- No se puede modificar la variable local dentro de la expresión lambda
-- No hay restriccion por nivel de clase o variable instantánea
+Un Stream es una secuencia de objetos que soporta varios metodos que pueden ser enlazados
+para producir el resultado deseado. Permite procesar colecciones.
+
+Permite filtrar y construir mapas a partir de colecciones.
+
+### Características
+
+- Un stream no es una estructura de datos. Toma los datos de colecciones, arrays o canales in/out
+- Stream no cambia la estructura de datos de la que se construye, solo devuelve los resultados tras
+la operación sobre la que se construye
+- Cada operación intermedia se realiza de forma lazy, y devuelve un stream que puede ser enlazada
+para operaciones posteriores
+- Se pueden construir operaciones en paralelo sin tener que usar hilos expresamente
+
+### Operaciones intermedias en streams
+
+- **Map**: Devuelve un stream consistente en los resultados de aplicar la función pasada por 
+parametro sobre los elementos del stream
+    ```java
+    List numbers = Arrays.asList(2,3,4,5,6)
+    // Map calculará el cuadrado de cada numero de la lista que construye el stream
+    List square = numbers.stream().map(x -> x * x).collect(Collectors.toList());
+    ```
+- **Filter**: Filtra los resultados basados en el predicado pasado al filtro
+    ```java
+    List names = Arrays.asList("Ana", "Luis", "Paco", "Julia");
+    // Filter filtrará los nombres que empiecen por J
+    List namesByJ = names.stream().filter(n -> n.startswith("J")).collect(Collectors.toList());
+    ```
+- **anyMatch**: Similar al filtro. Analiza cada objeto del stream y devuelve true si encuentra uno que 
+cumpla el filtro. **No recorre todo el stream**, si encuentra un objeto que cumpla la condición, devuelve true
+    ```java
+    Boolean existePrecioNeegativo = precios.stream().anyMatch(precio -> precio.intValue() < 0);
+    ```
+- **findAny()**: Otro filtro. En este caso indica que si encuentra alguno devuelva un `Optional`.
+Combinandolo con el método `isPresent()` del Optional, podemos filtrar. En este caso **SI se recorre
+todo el stream**, no como en `anyMatch`
+    ```java
+    public boolean detectarErrorFindAny() {
+       return this.precios.stream().filter(precio -> precio.intValue() < 0)
+                                   .findAny()
+                                   .isPresent();
+    }  
+    ```
+- **Sorted**: Ordena el stream basandose en un Comparator
+    ```java
+     List names = Arrays.asList("Ana", "Luis", "Paco", "Julia");
+     // Ordena alfabeticamente
+     List namesByJ = names.stream().sort().collect(Collectors.toList());
+     ```
+- **PararellStreams**: Permite ejecutar las operaciones del stream en hilos en paralelo, para que
+java lance un conjunto de hilos para realizar la tarea:
+    ```java
+    int total=lista.parallel().map(Principal::duplicar).sum();
+    ```
+
+#### Encadenado de operaciones intermedias
+
+Podemos encadenar operaciones intermedias, como por ejemplo aplicar varios filtros seguidos
+
+```java
+public class StreamExample {
+    public static void main(String[] args) {
+        //creating a map of names and course of instructors who teaches
+        //online have more than 10 years of experience
+
+        Predicate<Instructor> p1 = (i) -> i.isOnlineCourses();
+        Predicate<Instructor> p2 = (i) -> i.getYearsOfExperience()>10;
+
+        List<Instructor> list = Instructors.getAll();
+        list.stream().filter(p1).filter(p2);
+
+        Map<String, List<String>> map = list.stream()
+                                .filter(p1)
+                                .filter(p2)
+                                .peek(s-> System.out.println(s))
+                                .collect(Collectors.toMap(Instructor::getName, Instructor::getCourses));
+
+        //System.out.println(map);
+
+    }
+}
+```
+
+### Operaciones finales sobre streams
+
+- **Collect**: Se usa para devolver el resultado de las operaciones realizadas en el stream
+    ```java
+    List names = Arrays.asList("Ana", "Luis", "Paco", "Julia");
+    // Collect recoge los objetos del stream en este caso a una lista
+    List namesByJ = names.stream().sort().collect(Collectors.toList());
+    ```
+- **forEach**: Itera sobre el stream
+    ```java
+    List names = Arrays.asList("Ana", "Luis", "Paco", "Julia");
+    // Iteramos con forEach
+    List namesByJ = names.stream().sorted().forEach(y -> System.out.println(y));
+    ```
+- **reduce**: Realiza una reducción en el elemento del stream, devolviendo un solo resultado de
+la secuencia del stream. Tiene dos partes:
+  - La ***identidad***: Es el valor inicial de la operación de reducción, y el valor por defecto del 
+  resultado cuando el stream esta vacio
+  - La expresión lambda es el ***acumulador***, que realiza la operacion sobre los objetos del stream
+    ```java
+    List numbers = Arrays.asList(2,3,4,5,6)
+    // Reduce con identidad = 0 y acumulador [(a , b) -> a + b] que suma los objetos
+    List square = numbers.stream().reduce(0, (a, b) -> a + b)
+    ```
+
