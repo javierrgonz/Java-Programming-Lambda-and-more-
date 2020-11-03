@@ -204,10 +204,10 @@ public interface IStrategy {
 
 ### Interfaces funcionales útiles:
 - [`Consumer<T>`](#consumer)
-  - [Consumers especializados `IntConsumer, LongConsumer, DoubleConsumee`](#consumer_especializados)
+  - [Consumers especializados `IntConsumer, LongConsumer, DoubleConsumer`](#consumer_especializados)
 - [`BiConsumer<T>`](#biconsumer)
 - [`Predicate<T>`](#predicate)
-  - [Predicates especializados `IntPredicate, LongPredicate, DoublePredicate`](#predicate_especializado)
+  - [Predicates especializados `IntPredicate, LongPredicate, DoublePredicate`](#predicate_especializados)
   - [Predicates y biconsumers](#predicates-y-biconsumer)
 - [`BiPredicate<T>`](#bipredicate)
 - [`Function`](#function)
@@ -216,7 +216,33 @@ public interface IStrategy {
 - [`Binary operator`](#binary_operator)
 - [`Supplier`](#supplier)
 - [Métodos por referencia](#metodos_por_referencia)
-- [Constructores por referencia](#constructores-por-referencia)
+- [Constructores por referencia](#constructores_por_referencia)
+
+Un resumen general seria
+
+|  Nombre               | Argumentos                        | Respuesta                                         | Método de ejecución                   | 
+|-----------------------|-----------------------------------|---------------------------------------------------|---------------------------------------|
+|  **Consumer**         | Un argumento de cualquier tipo    | No                                                | `.accept(Object a)`                   |
+|  IntConsumer          | Un Integer                        | No                                                | `.accept(Integer a)`                  |
+|  LongConsumer         | Un Long                           | No                                                | `.accept(Long a)`                     |
+|  DoubleConsumer       | Un Double                         | No                                                | `.accept(Double a)`                   |
+|  **Biconsumer**       | Dos argumentos de cualquier tipo  | No                                                | `.accept(Object a, Object b)`         |
+|  **Predicate**        | Un argumento de cualquier tipo    | Booleano (`true` / `false`)                       | `.test(Object a)`                     |
+|  IntPredicate         | Un Integer                        | Booleano (`true` / `false`)                       | `.test(Integer a)`                    |
+|  LongPredicate        | Un Long                           | Booleano (`true` / `false`)                       | `.test(Long a)`                       |
+|  DoublePredicate      | Un Double                         | Booleano (`true` / `false`)                       | `.test(Double a)`                     |
+|  **BiPredicate**      | Dos argumentos de cualquier tipo  | Booleano (`true` / `false`)                       | `.test(Object a, Object b)`           |
+|  **Function**         | Un argumento de cualquier tipo    | Un resultado de cualquier tipo                    | `.apply(Object a)`                    |
+|  **Bifunction**       | Dos argumentos de cualquier tipo  | Un resultado de cualquier tipo                    | `.apply(Object a, Object b)`          |
+|  **UnaryOperator**    | Un argumento de cualquier tipo    | Un resultado del mismo tipo que el argumento      | `.apply(Object a, Object b)`          |
+|  IntUnaryOperator     | Un Integer                        | Un Integer                                        | `.apply(Integer a)`                   |
+|  LongUnaryOperator    | Un Long                           | Un Long                                           | `.apply(Long a)`                      |    
+|  DoubleUnaryOperator  | Un Double                         | Un Double                                         | `.apply(Double a)`                    |
+|  **BinaryOperator**   | Dos argumentos del mismo tipo     | Un resultado del mismo tipo que los argumentos    | `.apply(Object a, Object b)`          |
+|  IntBinaryOperator    | Dos Integer                       | Un Integer                                        | `.apply(Integer a, Integer b)`        |
+|  LongBinaryOperator   | Dos Long                          | Un Long                                           | `.apply(Long a, Long b)`              |
+|  DoubleBinaryOperator | Dos Double                        | Un Double                                         | `.apply(Double a, Double b)`          |
+|  **Supplier**         | Ninguno                           | Un resultado de cualquier tipo                    | El definido en el cuerpo del lambda   |
 
 #### Interfaz funcional `Consumer<T>`<a name="consumer"></a>
 
@@ -654,7 +680,7 @@ public class SupplierExample {
 }
 ```
 
-#### Métodos por referencia<a name="metodos-por-referencia"></a>
+#### Métodos por referencia<a name="metodos_por_referencia"></a>
 
 Es un atajo en notación lambda que permite llamar a un método
 Existen 3 tipos:
@@ -769,7 +795,7 @@ public class Principal {
 }
 ```
 
-#### Constructores por referencia<a name="constructor-por-referencia"></a>
+#### Constructores por referencia<a name="constructores_por_referencia"></a>
 
 Solo puede usarse en el contexto de una `interfaz funcional`, es decir, no podemos crear 
 una instancia de una clase de esta forma:
@@ -842,3 +868,11 @@ public class ConstructorReferenceExample {
     }
 }
 ```
+
+### Scopes en expresiones lambda
+
+- El cuerpo de la expresión tiene el mismo scope que un bloque anidado
+- No se puede declarar un parámetro o variable local en la función lambda que tenga el mismo nombre que una 
+variable local
+- No se puede modificar la variable local dentro de la expresión lambda
+- No hay restriccion por nivel de clase o variable instantánea
