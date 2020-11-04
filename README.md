@@ -908,6 +908,15 @@ la operación sobre la que se construye
 - Cada operación intermedia se realiza de forma lazy, y devuelve un stream que puede ser enlazada
 para operaciones posteriores
 - Se pueden construir operaciones en paralelo sin tener que usar hilos expresamente
+- Se diferencia de las colecciones en lo siguiente:
+
+| Collections | Streams |
+|---|---|
+|Almacena y agrupa informacion| No es una estructura de datos. Coge los de una coleccion y opera con ellos|
+|Puedes añadir y borrar elementos|No se pueden añadir ni borrar elementos|
+|Se debe iterar externamente|Se iteran internamente|
+|Construccion eagerly|Construccion lazy|
+|Pueden ser recorridas muchas veces|Solo se recorren una vez|
 
 ### Operaciones intermedias en streams
 
@@ -981,7 +990,8 @@ public class StreamExample {
 
 ### Operaciones finales sobre streams
 
-- **Collect**: Se usa para devolver el resultado de las operaciones realizadas en el stream
+- **Collect**: Se usa para devolver el resultado de las operaciones realizadas en el stream. Permite configurar que tipo de 
+coleccion queremos devolver, mediante la intefaz `Collectors`
     ```java
     List names = Arrays.asList("Ana", "Luis", "Paco", "Julia");
     // Collect recoge los objetos del stream en este caso a una lista
@@ -1003,4 +1013,5 @@ la secuencia del stream. Tiene dos partes:
     // Reduce con identidad = 0 y acumulador [(a , b) -> a + b] que suma los objetos
     List square = numbers.stream().reduce(0, (a, b) -> a + b)
     ```
+
 
