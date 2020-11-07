@@ -918,6 +918,28 @@ para operaciones posteriores
 |Construccion eagerly|Construccion lazy|
 |Pueden ser recorridas muchas veces|Solo se recorren una vez|
 
+### Creación de streams
+
+- **of**: Usaremos `Stream.of()` para crear un stream de tipos de datos similares
+    ```java
+    Arrays.aList(1,2,3).stream();
+    // Esto es similar a: 
+    Stream<Integer> stream = Stream.of(1,2,3);
+    Stream<Integer> stream = Stream.of(new Integer[]{1,2,3});
+    ```
+- **iterate**: Genera un stream secuencial infinito ORDENADO producido por la aplicación de un UnaryOperator
+que será la el elemento inicial de la iteración
+    ```java
+    // Genera un stream de numeros pares
+    Stream.iterate(0, i -> i + 2);
+    ```
+- **generate**: Genera un stream secuencial infinito DESORDENADO donde cada elemento es generado por el Suplier usado
+como parametro
+    ```java
+    // Generación de un stream de numeros random
+    Stream.generate(new Random()::nextInt);
+    ```
+
 ### Operaciones intermedias en streams
 
 - **Map**: Devuelve un stream consistente en los resultados de aplicar la función pasada por 
@@ -927,16 +949,34 @@ parametro sobre los elementos del stream
     // Map calculará el cuadrado de cada numero de la lista que construye el stream
     List square = numbers.stream().map(x -> x * x).collect(Collectors.toList());
     ```
-- **Filter**: Filtra los resultados basados en el predicado pasado al filtro
+- **distinct()**: filtra o recolecta todos los elementos distintos de un string.
+- **count()**: devuelve el numero de elementos en el stream
     ```java
-    List names = Arrays.asList("Ana", "Luis", "Paco", "Julia");
-    // Filter filtrará los nombres que empiecen por J
-    List namesByJ = names.stream().filter(n -> n.startswith("J")).collect(Collectors.toList());
+    Long count = Instructors.getAll().stream()
+                 .map(Instructor::getCourses)
+                 .flatMap(List::stream)
+                 .distinct()
+                 .count();  
     ```
 - **anyMatch**: Similar al filtro. Analiza cada objeto del stream y devuelve true si encuentra uno que 
 cumpla el filtro. **No recorre todo el stream**, si encuentra un objeto que cumpla la condición, devuelve true
     ```java
     Boolean existePrecioNeegativo = precios.stream().anyMatch(precio -> precio.intValue() < 0);
+    ```
+- **allMatch**: devuelve todos los elementos que cumplan el predicado pasado por parámetro
+- **noneMatch**: devuelve todos los elementos que NO cumplan con el predicado pasado por parámetro
+    ```java
+    boolean match = Instructors.getAll().stream()
+                    .map(Instructor::getCourses)
+                    .flatMap(List::stream)
+                    .noneMatch(s -> s.startsWith("J"));
+    ```
+- **findFist()**: Devuelve un `Optional` conteniendo el primer elemento del stream o un optional
+vacio si ningun elemento lo cumple
+    ```java
+    Optional<Instructor> instructorOptional = Instructors.getAll().stream().findFirst();
+    if (instructorOptional.isPresent())
+        System.out.println(instructorOptional.get());
     ```
 - **findAny()**: Otro filtro. En este caso indica que si encuentra alguno devuelva un `Optional`.
 Combinandolo con el método `isPresent()` del Optional, podemos filtrar. En este caso **SI se recorre
@@ -958,6 +998,48 @@ todo el stream**, no como en `anyMatch`
 java lance un conjunto de hilos para realizar la tarea:
     ```java
     int total=lista.parallel().map(Principal::duplicar).sum();
+    ```
+- **Map**: Permite convertir un stream de X en un stream de Y. **No confundir con Collectors.toMap**
+    ```java
+    // Convertimos un listado de Instructors en un set de Strings con sus nombres
+    // en mayúsculas usando map
+    Set<String> instructorNames = Instructors
+                                  .getAll()
+                                  .stream()
+                                  .map(Instructor::getName)
+                                  .map(String::toUpperCase)
+                                  .collect(Collectors.toSet());
+    ```
+- **FlatMap**: Combinacion de un mapa y una operación de aplanado. Devuelve un flujo que 
+    consta de los resultados de reemplazar cada elemento de este flujo con el contenido de un flujo mapeado producido 
+    al aplicar la función de mapeo proporcionada a cada elemento.
+    Por ejemplo, en este caso, convierte un Stream<List<String>> a un Stream<Object> para simplificar
+    el stream inicial
+    ```java
+    // Obtiene un listado de Strings con los cursos 
+    // Con la orden .map(Instructor::getCourses) obtenemos un Stream<List<String>>
+    // Después con .flatMap(List::stream) obtenemos un Stream<Object>
+    Set<String> instructorsCourses = Instructors.getAll().stream()
+                                     .map(Instructor::getCourses)     // Stream<List<String>>
+                                     .flatMap(List::stream)           // Stream<Object>           
+                                     .collect(Collectors.toSet());  
+    ```
+- **Filter**: Filtra los resultados basados en el predicado pasado al filtro. Es una operacion `lazy`, que significa que realmente no se está realizando ningún filtrado en 
+el elemento, sino que en paralelo se está creando un nuevo stream que contiene los elementos 
+   del stream inicial que cumplen con el predicado
+   ```java
+   List names = Arrays.asList("Ana", "Luis", "Paco", "Julia");
+   // Filter filtrará los nombres que empiecen por J
+   List namesByJ = names.stream().filter(n -> n.startswith("J")).collect(Collectors.toList());
+   ```
+- **limit(long n)**: Devuelve un stream de tamaño no superior al long pasado por parametro
+    ```java
+    List<Integer> numbers = Arrays.asList(1,2,3,4,5,6,7,8);
+    List limit5numbers = numbers.stream().limit(5).collect(Collectors.toList());
+    ```
+- **skip(long n)**: Devuelve un stream obviando los primeros `n` elementos
+    ```java
+    List skip5numbers = numbers.stream().skip(5).collect(Collectors.toList());
     ```
 
 #### Encadenado de operaciones intermedias
@@ -1003,15 +1085,92 @@ coleccion queremos devolver, mediante la intefaz `Collectors`
     // Iteramos con forEach
     List namesByJ = names.stream().sorted().forEach(y -> System.out.println(y));
     ```
-- **reduce**: Realiza una reducción en el elemento del stream, devolviendo un solo resultado de
-la secuencia del stream. Tiene dos partes:
+- **reduce**: Realiza un proceso repetido combinando todos los elementos del stream. Obtiene
+todos los elementos y los combina en un solo resultado sencillo por la repetición de operaciones
+combinadas como suma, multiplicación y división de elementos. 
+Tiene dos partes:
   - La ***identidad***: Es el valor inicial de la operación de reducción, y el valor por defecto del 
   resultado cuando el stream esta vacio
-  - La expresión lambda es el ***acumulador***, que realiza la operacion sobre los objetos del stream
+  - La expresión lambda (`BinaryOperator`) es el ***acumulador***, que realiza la operacion sobre los objetos del stream
+Tiene dos métodos, y según el que se use puede usar uno o los dos parámetros:
+  - `T reduce(identidad, acumulador);`
+  - `Optional reduce(acumulador)` 
     ```java
-    List numbers = Arrays.asList(2,3,4,5,6)
-    // Reduce con identidad = 0 y acumulador [(a , b) -> a + b] que suma los objetos
-    List square = numbers.stream().reduce(0, (a, b) -> a + b)
+    // Reduce con identidad = 0 y acumulador (a , b) -> a + b que suma los objetos
+    List<Integer> numbers = Arrays.asList(1,2,3,4);
+    int results = numbers.stream().reduce(0,(a,b) -> a +b);  // 1+2+3+4 = 10
+    int results1 = numbers.stream().reduce(1,(a,b) -> a* b); // 2*3*4 = 24
+
+    // Reducer con Optional
+    Optional result2 = numbers.stream().reduce((a, b) -> a + b);
+    System.out.println("--------");
+    if(result2.isPresent())                 // El optional puede contener un objeto o no
+        System.out.println(result2.get());
+ 
     ```
+- **max**: Obtiene el máximo de los valores del stream, segun el `Comparator` pasado por parámetro.
+Devuelve un `Optional`
+    ```java
+    List<Integer> numbers = Arrays.asList(1,2,3,4,5,6,7,8);
+    Optional result = numbers.stream().max(Integer::compareTo);
+    ```
+    Esto podría implementarse con un `reduce` y un ternario:
+    ```java
+    List<Integer> numbers = Arrays.asList(1,2,3,4,5,6,7,8);
+    int result2 = numbers.stream().reduce(0,(a,b)-> a>b?a:b);
+    Optional result3 = numbers.stream().reduce((a,b)->a>b?a:b);
+    ```
+- **min**: Similar al anterior, pero obtiene el minimo:
+    ```java
+    List<Integer> numbers = Arrays.asList(1,2,3,4,5,6,7,8);
+    Optional result = numbers.stream().min(Integer::compareTo);
+    ```
+    De igual forma se puede realizar con un reduce y un ternario:
+    ```java
+    List<Integer> numbers = Arrays.asList(1,2,3,4,5,6,7,8);
+    int result1 = numbers.stream().reduce(0,(a,b) -> a<b?a:b);
+    Optional result2 = numbers.stream().reduce((a,b) -> a<b?a:b);
+    ```
+
+#### Ejemplo combinando map + filter + reduce
+
+```java
+public class StreamMapFilterReduceExample {
+    public static void main(String[] args) {
+        //total years of experience b/w instructors
+        int result = Instructors.getAll().stream()
+                       .filter(Instructor::isOnlineCourses)     // Obtiene los que sean true
+                       .map(Instructor::getYearsOfExperience)   // Recoge los años de experiencia
+                       .reduce(0,Integer::sum);                 // Los suma todos 
+    }
+}
+```
+
+#### Ordenaciones customizadas con `Comparator` y `sorted`
+
+Podemos usar la interfaz `Comparator` para crear comparaciones customizadas.
+La interfaz dispone de un metodo `comparing` al que debemos pasar el parámetro por el que
+queremos comparar.
+Además permite encadenar opciones posteriores, como por ejemplo `.reversed()` si queremos que el
+orden sea el inverso, o `thenComparing(...` si queremos realizar más comparaciones
+Un ejemplo para obtener una serie de nombres ordenados alfabeticamente seria `.sorted(Comparator.comparing(Instructor::getName))`
+
+```java
+public class StreamComparatorExample {
+    public static void main(String[] args) {
+        //retuning all instructors sorted by their name
+        List<Instructor> list = Instructors.getAll().stream()
+                                .sorted(Comparator.comparing(Instructor::getName).reversed())
+                                .collect(Collectors.toList());
+
+        list.forEach(System.out::println);
+
+    }
+}
+```
+
+### Numeric Streams
+
+
 
 
