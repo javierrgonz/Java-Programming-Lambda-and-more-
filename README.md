@@ -1171,6 +1171,221 @@ public class StreamComparatorExample {
 
 ### Numeric Streams
 
+Existen tres tipos de Streams numericos: **IntStream**, **LongStream**, **DoubleStream**
 
+#### IntStream
 
+- **Generación**
+  ```java
+  IntStream numbers = IntStream.of(1,2,3,4,5); // 1,2,3,4,5  
+  IntStream numbers = InsSteam.iterate(0, i -> i + 2).limit(5); // 0,2,4,6,8
+  IntStream numbers = InsSteam.generate(() ->
+    ThreadLocalRandom.current().nextInt(10)).limit(5); // 5 numeros random
+  IntStream numbers = InsSteam.range(1,5); // 1,2,3,4
+  IntStream numbers = InsSteam.rangeClosed(1,5); // 1,2,3,4,5
+  ```
+- **LongStream**
+  ```java
+  LongStream numbers = LongStream.of(1,2,3,4,5); // 1,2,3,4,5  
+  LongStream numbers = LongStream.iterate(0, i -> i + 2).limit(5); // 0,2,4,6,8
+  LongStream numbers = LongStream.generate(() ->
+    ThreadLocalRandom.current().nextInt(10)).limit(5); // 5 numeros random
+  LongStream numbers = LongStream.range(1,5); // 1,2,3,4
+  LongStream numbers = LongStream.rangeClosed(1,5); // 1,2,3,4,5  
+  ```
+- **DoubleStream**
+  ```java
+  DoubleStream numbers = DoubleStream.of(1.2,2.2,3.3,4.3,5.5); // 1.2,2.2,3.3,4.3,5.5  
+  DoubleStream numbers = DoubleStream.iterate(0, i -> i + 2).limit(5); // 0.0,2.0,4.0,6.0,8.0
+  DoubleStream numbers = DoubleStream.generate(() ->
+    ThreadLocalRandom.current().nextDouble(10.0)).limit(5); // 5 numeros double  random
+  DoubleStream numbers = DoubleStream.range(1,5).asDoubleStream(10.0); // 1.0,2.0,3.0,4.0
+  DoubleStream numbers = DoubleStream.rangeClosed(1,5).asDoubleStream(10.0); // 1.0,2.0,3.0,4.0,5.0  
+  ```
 
+#### Funciones agregadas de NumericStreams
+
+- **sum()**: Devuelve la suma de los elementos en el stream
+- **max()**: Devuelve el elemento máximo del stream
+- **min()**: Devuelve el elemento mínimo del stream
+- **average()**: Debuelve la media de los elementos del stream
+
+#### Boxing / Unboxing
+
+**Boxing**: Convertir un primitivo en un objeto de clase envolvente
+```java
+// Creamos un stream de int primitivos
+IntStream numStream = IntStream.rangeClosed(0,5000); 
+// con boxed() devolvemos cada elemento primitivo del stream como el wrapper Integer 
+List<Integer> numbers = numStream.boxed().collect(Collectors.toList());
+```
+**Unboxing**: Convertir un wrapper en un primitivo
+```
+// Con mapToInt(Integer::intValue) mapeamos cada wrapper a su clase primitiva
+IntStream numStream = IntStream.rangeClosed(0,5000); 
+int sum1 = numbers.stream().mapToInt(Integer::intValue).sum();
+``` 
+
+#### mapToObj, mapToLong, mapToDouble
+
+**mapToObj**: En un Numeric Stream, devuelve un stream de objetos
+```java
+IntStream.mapToObj(a --> Integer.toBinaryString(a));
+```
+**mapToLong**: En un Numeric Stream, devuelve un stream de Longs
+```java
+IntStream.mapToLong(num --> (long) num);
+```
+**mapToDouble**: En un Numeric Stream, devuelve un stream de Doubles
+```java
+LongStream.mapToDouble(num --> (double) num);
+```
+
+### Collectors
+
+- **joining()**
+  - **joining()** concatena los elementos de entrada en una cadena, en el orden en que lo encuentra
+  ```java
+  Stream.of("E", "F", "G").collect(Collectors.joining()); // EFG
+  ```
+  - **joining(CharSequence delimiter)** concatena los elementos de entrada en una cadena, en el orden en que lo encuentra 
+separados por el delimitador
+  ```java
+  Stream.of("E", "F", "G").collect(Collectors.joining(",")); // E,F,G
+  ```
+  - **joining(CharSequence delimiter, CharSequence prefix, CharSequence suffix)** concatena los elementos de entrada en una cadena, en el orden en que lo encuentra 
+separados por el delimitador con el prefijo y sufijo indicado
+  ```java
+  Stream.of("E", "F", "G").collect(Collectors.joining(",","{","}")); // {E,F,G,Z}
+  ```
+
+- **counting()**: cuenta el numero de elementos en el stream
+  ```java
+  Stream.of(1,2,3,4,5,6).collect(Collectors.counting());
+  Stream.of(1,2,3,4,5,6).count();
+  // Util en operaciones de degradación
+  grouping(String::length, counting());
+  ```
+
+- **mapping()**: coge una función y otro collector y crea un nuevo collector que aplica la funcion y recoge el resultado
+usando el collector pasado por parámetro
+  ```java
+  Collectors.mapping(Instructor::getName, Collectors.toList());
+  // Es equivalente a 
+  ...map(Instructor::getName).collect(Collectors.toList());
+  // Por ejemplo: Agrupamos los instructors por años de experiencia, y luego mapeamos
+  // los nombres, devolviendo un Map<Integer, List<String>> mediante collect
+  Map<Integer, List<String>> mapYearsOfExperienceAndNames = Instructors.getAll().stream().collect(
+      Collectors.groupingBy(Instructor::getYearsOfExperience,
+          Collectors.mapping(Instructor::getName, Collectors.toList())));
+  ```
+
+- **minBy / maxBy**: Recoge un collector que produce el maximo o minimo elemento segun
+el comparator que se pasa por parametro
+  ```java
+  // Instructor with minimum years of experience
+  Optional<Instructor> instructor = Instructors.getAll().stream()
+          .collect(Collectors.minBy(Comparator.comparing(Instructor::getYearsOfExperience)));
+  // Equivalente con (min)
+  instructor = Instructors.getAll().stream().min(Comparator.comparing(Instructor::getYearsOfExperience));
+
+  // Similar con max
+  instructor = Instructors.getAll().stream().collect(Collectors.maxBy(Comparator.comparing(Instructor::getYearsOfExperience)));
+  // Equivalente con min
+  instructor = Instructors.getAll().stream().max(Comparator.comparing(Instructor::getYearsOfExperience));
+  ```
+
+- **summingInt(), averagingInt()**: 
+  - **summingIng()**: devuelve un collector que construye la SUMA de los valores integer sobre los que se aplica 
+  - **averagingIng()**: devuelve un collector que construye la MEDIA de los valores integer sobre los que se aplica 
+  ```java
+  // sum of years of experience of all instructor
+  int sum = Instructors.getAll().stream().collect(Collectors.summingInt(Instructor::getYearsOfExperience));
+  // calculate average of years of experience of all instructors
+  double average = Instructors.getAll().stream().collect(Collectors.averagingInt(Instructor::getYearsOfExperience));
+  ```
+ 
+- **groupingBy()**: Proporciona una funcionalidad similar a la clausula `GROUP BY` de SQL devolviendo un `Map<Key, Value>`
+Existen tres metodos sobrecargados:
+  - `groupingBy(classifier)`
+    ```java
+    List<String> names = List.of("Syed", "Mike", "Jenny", "Gene", "Rajeev");
+    // Agrupar por longitud del String
+    Map<Integer,  List<String>> result = names.stream().collect(Collectors.groupingBy(String::length));
+    // Grouping by experience where > 10 years of experience is classified as Senior and others are junior
+    Map<String, List<Instructor>> instructorsByExperience = Instructors.getAll().stream().collect(
+        Collectors.groupingBy(instructor -> instructor.getYearsOfExperience()>10 ? "SENIOR": "JUNIOR"));
+    ```
+  - `groupingBy(classifier, downstream)`
+    ```java
+     List<String> name = List.of("Sid", "Mike", "Jenny", "Gene", "Rajeev");
+     // grouping by length of string and also checking that the names contains e
+     // and only return those name which has e in it   
+     Map<Integer, List<String>> result = name.stream().collect(
+        Collectors.groupingBy(
+            String::length, 
+            Collectors.filtering(
+                s-> s.contains("e"),
+                Collectors.toList())));
+     // instructor grouping them by Senior(>10) and Junior(<10) and filter them on online courses
+     Map<String, List<Instructor>> instructorByExpAndOnline = Instructors.getAll().stream().collect(
+        Collectors.groupingBy(
+            instructor -> instructor.getYearsOfExperience() >10 ? "SENIOR": "JUNIOR",
+            Collectors.filtering(
+                s->s.isOnlineCourses(),
+                Collectors.toList())));
+    ```
+  - `groupingBy(classifier, mapfactory, downstream)`
+    ```java
+    List<String> name = List.of("Sid", "Mike", "Jenny", "Gene", "Rajeev");
+    // grouping by length of string and also checking that the names contains e
+    // and only return those name which has e in it
+    LinkedHashMap<Integer, List<String>> result = name.stream()
+        .collect(
+            Collectors.groupingBy(
+                String::length,             // Classifier
+                LinkedHashMap::new,         // MapFactory
+                Collectors.filtering(       // DownStream
+                    s-> s.contains("e"),
+                    Collectors.toList()
+        )));
+    // instructor grouping them by Senior(>10) and Junior(<10) and filter them
+    // on online courses
+    LinkedHashMap<String, List<Instructor>> instructorByExpAndOnline = Instructors.getAll().stream()
+        .collect(
+            Collectors.groupingBy(
+                instructor -> instructor.getYearsOfExperience() >10 ? "SENIOR": "JUNIOR",  // Classifier
+                LinkedHashMap::new,                 // MapFactory
+                Collectors.filtering(               // Downstream
+                    s -> s.isOnlineCourses(),
+                    Collectors.toList()
+        )));
+    ```
+
+- **partitioningBy()** se usa para particionar un stream de objetos basados en un 
+predicado entregado
+```java
+// partition instructors in two groups of instructor first is years of experience is > 10 and other is <=10
+Predicate<Instructor> experiencePredicate = instructor -> instructor.getYearsOfExperience() > 10;
+
+// Crea dos listados, un con las que cumplen el predicado y otras con las que no
+Map<Boolean, List<Instructor>> partitionMap = Instructors.getAll().stream().collect(
+    Collectors.partitioningBy(experiencePredicate));
+
+//partition but return is set instead of list
+Map<Boolean, Set<Instructor>> partitionSet = Instructors.getAll().stream().collect(
+    Collectors.partitioningBy(experiencePredicate, Collectors.toSet()));
+```
+
+### ParallelStream
+
+ParallelStream divide los datos de partida en múltiples partes, las procesa en paralelo y combina el resultado
+Aumenta el rendimiento en procesadores multicore. Se crearan un numero de hilos segun el numero de procesadores
+
+Hay dos maneras de crearlo:
+- Llamando al metodo `parallelStream()` en una colección
+- Llamando el metodo `parallel()` en un stream
+
+```java
+IntStream.rangeClosed(0,50000).parallel().sum();
+```
