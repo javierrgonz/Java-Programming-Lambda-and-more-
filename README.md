@@ -1994,3 +1994,76 @@ module com.modulos.producer {
     exports com.modules.producer;
 }
 ```
+
+## Lección 9 - Factory Methods for Collections
+
+En Java 9 se incorporan los Factory Methods para crear listas, sets y map inmodificables
+Antes de Java 9 se creaban asi:
+
+```java
+List<String> names = new ArrayList(); 
+names.add("Syed"); 
+names.add("Mike"); 
+names.add("Jenny"); 
+names = Collections.unmodifiableList(names);
+```
+
+Con los `Factory Methods` introducidos en Java 9:
+
+```java        
+List<String> names2 = List.of("Syed", "Mike", "Jenny");
+Set<String> set = Set.of("Syed", "Mike", "Jenny");
+Map<String, String> map = Map.of("Grade1", "Syed", "Grade2", "Mike");
+```
+
+## Lección 10 - Mejoras en try-with-resources
+
+El try-with-resources es una orden try que declara uno o más recursos, que son objetos que deben cerrarse después de uqe
+el programa se finalice. Con try-with-resources nos aseguramos que cada recurso se cierre al final del statement.
+Para ser un recurso, el objeto debe implementar `java.lang.AutoCloseable` o `java.io.Closeable`.
+
+En Java 8 se realizaba declarando el resource fuera del bucle y reasignandolo en la definicion del try:
+```java
+Reader inputString = new StringReader("Don't cut any corners");
+BufferedReader bufferedReader = new BufferedReader(inputString);
+try(BufferedReader bufferedReader1=bufferedReader){
+    System.out.println("bufferedReader1.readLine() = "
+            + bufferedReader1.readLine());
+}
+```
+
+En Java 9 no hace falta redefinirlo en la cabecera del try:
+```java
+Reader inputString2 = new StringReader("Hang in there");
+BufferedReader bufferedReader2 = new BufferedReader(inputString2);
+try(bufferedReader2){
+    System.out.println("bufferedReader2.readLine() = "
+            + bufferedReader2.readLine());
+}
+``` 
+
+# JAVA 10
+
+## `var` type
+
+Desde Java 10 se puede eliminar la definición de tipo expresa al crear una variable
+Para ello:
+- La variable local `var` debe ser inicializada en su declaración
+- El compilador debe ser capaz de inferir el tipo de variable asi que una variable con `null` no compilará, dado que el compilador
+infiere el tipo de la declaración
+
+```java
+var name = "Mike"; // Infiere el tipo String
+var dateTime = LocalDateTime.now(); // Infiere el tipo LocalDateTime
+var numbers; // Al no poder inferir el tipo no compila
+```
+
+# JAVA 11
+
+## `var` with lambda
+
+A partir de java 11 se permite el uso de `var` en funciones lambda:
+
+```java
+(var j, var i) -> i + j;
+```
