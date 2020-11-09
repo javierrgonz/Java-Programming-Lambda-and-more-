@@ -1438,7 +1438,7 @@ Hay dos maneras de crearlo:
 IntStream.rangeClosed(0,50000).parallel().sum();
 ```
 
-## Optional
+## Lección 4 - Optionals
 
 Esta clase permite evitar excepciones por NullPointerException. Se trata de unac lase generica que puede
 contener cualquier clase de objeto.
@@ -1558,3 +1558,72 @@ private static double getDurationOfAlbumWithName(String name) {
             .orElse(0.0);
 }
 ```
+
+## Lección - Default / Static methods
+
+Con Java 8 se incorpora la opción de que las interfaces dispongan de métodos `default` y métodos `static`, implementando 
+el cuerpo por defecto del método. En caso de los métodos por `default`, el comportamiento puede ser sobreescrito por las
+clases que lo implementen, pero no en los métodos `static`.
+
+```java
+// Interfaz con metodo default
+public interface InterfaceA {
+    default void sumA(int num1, int num2){
+        System.out.println("InterfaceA.sumA " + (num1 + num2));
+    }
+}
+
+// Clase implementando el método 
+public class Example implements InterfaceA {
+    public static void main(String[] args) {
+        ...    
+    }
+
+    // Podemos sobreescribir el método default
+    @Override
+    public int sum(int num1, int num2) {
+       return num1 + num2;
+    }
+}
+```
+
+### Herencia múltiple por implementación de interfaces
+
+En caso de herencia múltiple por implementación de interfaces, en caso de que el método exista en las distintias interfaces,
+
+- Si la clase no lo implementa, se ejecuta el metodo de la ultima interfaz que lo implemente.
+- Si la clase lo implementa, se ejecuta el de la clase
+
+```java
+public interface InterfaceA {
+    default void sumA(int num1, int num2){
+        System.out.println("InterfaceA.sumA " + (num1 + num2));
+    }
+}
+
+public interface InterfaceB extends InterfaceA{
+    default void sumA(int num1, int num2){
+        System.out.println("InterfaceB.sumA " + (num1 + num2));
+    }
+}
+
+public class MultipleIneritanceExampleA implements InterfaceA, InterfaceB {
+    public static void main(String[] args) {
+        MultipleIneritanceExampleA multipleIneritanceExample = new MultipleIneritanceExampleA();
+        multipleIneritanceExample.sumA(4,8);  // Usa el de InterfazB
+    }
+}
+
+public class MultipleIneritanceExampleB implements InterfaceA, InterfaceB {
+    public static void main(String[] args) {
+        MultipleIneritanceExampleB multipleIneritanceExample = new MultipleIneritanceExampleB();
+        multipleIneritanceExample.sumA(4,8);  // Usa el de la clase
+    }
+
+    // Usará este
+    public void sumA (int num1, int num2){
+        System.out.println("MultipleIneritanceExample.sumA" + (num1 + num2));
+    }
+}
+```
+
