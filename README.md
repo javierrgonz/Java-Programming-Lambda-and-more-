@@ -918,6 +918,54 @@ para operaciones posteriores
 |Construccion eagerly|Construccion lazy|
 |Pueden ser recorridas muchas veces|Solo se recorren una vez|
 
+### Resumen
+
+| Tipo operación             | Nombre                                                                     | Metodo                                                                                         | Obs                                                                                                                                                                                                   |
+|----------------------------|----------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Creacion                   | stream                                                                     | `Arrays.aList(1,2,3).stream()`                                                                 | Stream de tipo de datos similares                                                                                                                                                                     |
+| Creacion                   | of                                                                         | `Stream.of(1,2,3)`                                                                             | Stream de tipo de datos similares                                                                                                                                                                     |
+| Creacion                   | iterate                                                                    | `Stream.iterate(0, i -> i + 2)`                                                                | Secuencial infinito ORDENADO                                                                                                                                                                          |
+| Creacion                   | generate                                                                   | `Stream.generate(new Random()::nextInt)`                                                       | Secuencial infinito RANDOM                                                                                                                                                                            |
+| Intermedia                 | distinct                                                                   | `...stream().distinct()…`                                                                      | Filtra o recolecta todos los elementos distintos de un string                                                                                                                                         |
+| Intermedia                 | count                                                                      | `…stream().count()…`                                                                           | Devuelve el numero de elementos en el stream                                                                                                                                                          |
+| Intermedia                 | sort                                                                       | `...stream().sort()…`                                                                          | Ordena el stream basandose en un Comparator                                                                                                                                                           |
+| Intermedia                 | sorted                                                                     | `....stream().sorted(Comparator.comparing(Instructor::getName)`                                | Ordena el stream basandose en un Comparator                                                                                                                                                           |
+| Intermedia                 | pararell                                                                   | `…stream().parallel()…`                                                                        | Permite ejecutar las operaciones del stream en hilos en paralelo, para que java lance un conjunto de hilos para realizar la tarea                                                                     |
+| Intermedia                 | map                                                                        | `...stream().map(x -> x * x)…`                                                                 | Devuelve un stream consistente en los resultados de aplicar la función pasada por parametro sobre los elementos del stream                                                                            |
+| Intermedia                 | flatMap                                                                    | `…stream().map(…).flatMap(List::stream)…`                                                      | Devuelve un flujo que consta de los resultados de reemplazar cada elemento de este flujo con el contenido de un flujo mapeado producido al aplicar la función de mapeo proporcionada a cada elemento. |
+| Intermedia                 | filter                                                                     | `....stream().filter(n -> n.startswith("J"))…`                                                 | Filtra los resultados basados en el predicado pasado al filtro                                                                                                                                        |
+| Intermedia                 | anyMatch                                                                   | `...stream().anyMatch(s -> s.startsWith("J"))`                                                 | Analiza cada objeto del stream y devuelve true si encuentra uno que cumpla el filtro. No recorre todo el stream, si encuentra un objeto que cumpla la condición, devuelve true                        |
+| Intermedia                 | allMatch                                                                   | `…stream().allMatch(s -> s.startsWith("J"))`                                                   | Devuelve todos los elementos que cumplan el predicado pasado por parámetro                                                                                                                            |
+| Intermedia                 | noneMatch                                                                  | `…stream().noneMatch(s -> s.startsWith("J"))`                                                  | Devuelve todos los elementos que NO cumplan con el predicado pasado por parámetro                                                                                                                     |
+| Intermedia                 | findFirst                                                                  | `...stream().findFirst()`                                                                      | Devuelve un Optional conteniendo el primer elemento del stream o un optional vacio si ningun elemento lo cumple                                                                                       |
+| Intermedia                 | findAny                                                                    | `...stream().filter(precio -> precio.intValue() < 0).findAny().isPresent()`                    | Indica que si encuentra alguno devuelva un Optional. En este caso SI se recorre todo el stream.                                                                                                       |
+| Intermedia                 | limit                                                                      | `...stream().limit(5)…`                                                                        | Devuelve un stream de tamaño no superior al long pasado por parametro                                                                                                                                 |
+| Intermedia                 | skip                                                                       | `…stream().skip(5)…`                                                                           | Devuelve un stream obviando los primeros n elementos pasados por parametro                                                                                                                            |
+| Final                      | collect                                                                    | `…stream()...collect(Collectors.toList())`                                                     | Devolver el resultado de las operaciones realizadas en el stream usando el tipo indicado por parametro                                                                                                |
+| Final                      | forEach                                                                    | `…stream()…forEach(y -> System.out.println(y))`                                                | Itera sobre el stream                                                                                                                                                                                 |
+| Final                      | reduce                                                                     | `…stream()…reduce(0,(a,b) -> a +b)`                                                            | Obtiene todos los elementos y los combina en un solo resultado sencillo combinandolos                                                                                                                 |
+| Final                      | max                                                                        | `...stream().max(Integer::compareTo)`                                                          | Obtiene el máximo de los valores del stream, segun el Comparator pasado por parámetro                                                                                                                 |
+| Final                      | min                                                                        | `…numStream().min(Integer:compareTo)`                                                          | Obtiene el mínimo de los valores del stream, segun el Comparator pasado por parámetro                                                                                                                 |
+| NumericStream / intermedia | sum                                                                        | `…numStream().sum()`                                                                           | Devuelve la suma de los elementos del stream                                                                                                                                                          |
+| NumericStream / intermedia | max                                                                        | `…numStream().max()`                                                                           | Devuelve el máximo de los elementos del stream                                                                                                                                                        |
+| NumericStream / intermedia | min                                                                        | `…numStream().min()`                                                                           | Devuelve el mínimo de los elementos del stream                                                                                                                                                        |
+| NumericStream / intermedia | average                                                                    | `…numStream().average()`                                                                       | Devuelve la media de los elementos del stream                                                                                                                                                         |
+| NumericStream / intermedia | boxed                                                                      | `…numStream().boxed()...`                                                                      | Convertir un stream de primitivos en un objeto de clase wrapper                                                                                                                                       |
+| NumericStream / intermedia | mapToInt                                                                   | `…numStream().mapToInt(Integer::intValue)...`                                                  | Convierte un stream de wrappers en los primitivos correspondientes                                                                                                                                    |
+| NumericStream / intermedia | mapToObj                                                                   | `…numStream().mapToObj(a --> Integer.toBinaryString(a))...`                                    | En un Numeric Stream, devuelve un stream de objetos                                                                                                                                                   |
+| NumericStream / intermedia | mapToLong                                                                  | `…numStream().mapToLong(num --> (long) num)...`                                                | En un Numeric Stream, devuelve un stream de Longs                                                                                                                                                     |
+| NumericStream / intermedia | mapToDouble                                                                | `…numStream().mapToDouble(num --> (double) num)...`                                            | En un Numeric Stream, devuelve un stream de Doubles                                                                                                                                                   |
+| Collectors                 | joining()                                                                  | `…stream().collect(Collectors.joining());`                                                     | Concatena los elementos de entrada en una cadena, en el orden en que lo encuentra                                                                                                                     |
+| Collectors                 | joining(CharSequence delimiter)                                            | `…stream().collect(Collectors.joining(","));`                                                  | Concatena los elementos de entrada en una cadena separados por el delimitador                                                                                                                         |
+| Collectors                 | joining(CharSequence delimiter, CharSequence prefix, CharSequence suffix)  | `…stream().collect(Collectors.joining(",","preffix","suffix"));`                               | Concatena los elementos de entrada en una cadena separados por el delimitador con un prefijo y un sufijo pasados por parametros                                                                       |
+| Collectors                 | counting()                                                                 | `…stream().collect(Collectors.counting())`                                                     | Cuenta el numero de elementos en el stream                                                                                                                                                            |
+| Collectors                 | mapping()                                                                  | `…stream().collect(Collectors.mapping(Instructor::getName, Collectors.toList()))`              | Coge una función y otro collector y crea un nuevo collector que aplica la funcion y recoge el resultado usando el collector pasado por parámetro                                                      |
+| Collectors                 | minBy / maxBy                                                              | `…stream().collect(Collectors.minBy(Comparator.comparing(Instructor::getYearsOfExperience)));` | Recoge un collector que produce el maximo o minimo elemento segun el comparator que se pasa por parametro                                                                                             |
+| Collectors                 | summingInt                                                                 | `...stream().collect(Collectors.summingInt(Instructor::getYearsOfExperience));`                | Devuelve un collector que construye la SUMA de los valores integer sobre los que se aplica                                                                                                            |
+| Collectors                 | averagingInt                                                               | `...stream().collect(Collectors.averagingInt(Instructor::getYearsOfExperience));`              |  Devuelve un collector que construye la MEDIA de los valores integer sobre los que se aplica                                                                                                          |
+| Collectors                 | groupingBy                                                                 | Ver expandido                                                                                  | Proporciona una funcionalidad similar a la clausula GROUP BY de SQL devolviendo un Map<Key, Value>                                                                                                    |
+| Collectors                 | partitioningBy                                                             | `...stream().collect(Collectors.partitioningBy(experiencePredicate))`                          | Particionar un stream de objetos basados en un predicado entregado. Devuelve un mapa `Map<Boolean, List<T>>` con los elementos que cumplen y los que no  separados                                    |
+
 ### Creación de streams
 
 - **of**: Usaremos `Stream.of()` para crear un stream de tipos de datos similares
@@ -1388,4 +1436,125 @@ Hay dos maneras de crearlo:
 
 ```java
 IntStream.rangeClosed(0,50000).parallel().sum();
+```
+
+## Optional
+
+Esta clase permite evitar excepciones por NullPointerException. Se trata de unac lase generica que puede
+contener cualquier clase de objeto.
+
+### Construcción
+
+```java
+// Clase
+public final class Optional<T>{}
+
+// Creacion
+public static<T> Optional<T> empty();
+public static <T> Optional<T> ofNullable(T value);
+public static <T> Optional<T> of(T value);
+
+// Ejemplo
+String nombre = "Daniel";
+Optional<String> oNombre = Optional.of(nombre);
+```
+
+### Comprobación de existencia de valor
+
+El método `isPresent` método es el equivalente a `variable == null` y cómo el propio nombre indica nos dice si el objeto
+`Optional` contiene un valor o está vacío. Este método se usa principalmente si trabajamos de manera imperativa con
+`Optional`. Y el método `get` es el encargado de devolvernos el valor, devolviendo una excepción si no estuviera presente.
+
+```java
+// isPresent
+Optional<String> stringOptional = Optional.ofNullable("Hello World");
+if(stringOptional.isPresent())
+System.out.println("stringOptional = " + stringOptional);
+
+// ifPresent para uso con Lambdas
+stringOptional.ifPresent(s -> System.out.println("s = " + s));
+
+// Obtencion del valor
+public T get();
+```
+
+### Métodos de encadenamiento
+
+`Optional` permite encadenar distintas operaciones que devuelvan `Optional` sin tener que comprobar si el valor está presente
+después de cada operación
+
+```java
+public Optional<T> filter(Function f);
+public<U> Optional<U> map(Function f);
+public<U> Optional<U> flatMap(Function f);
+```
+
+Por ejemplo el metodo `map`, comprueba si el Optional está vacío, si lo está devuelve un `Optional` vacío y si no, 
+aplica la función que le hemos pasado por parámetro, pasándole el valor del `Optional`
+
+```java
+public<U> Optional<U> map(Function<? super T, ? extends U> mapper) {
+    Objects.requireNonNull(mapper);
+    if (!isPresent())
+        return empty();
+    else {
+        return Optional.ofNullable(mapper.apply(value));
+    }
+}
+```
+
+### Métodos de finalización
+
+Finalmente estos métodos nos permiten finalizar una serie de operaciones, teniendo tres maneras: 
+
+- **orElse**: devuelve el valor o si no devolverá el valor que le demos. 
+- **orElseGet**: devolverá el valor si está presente y si no, invocará la función que le pasemos por parámetro y devolverá el resultado de dicha función. 
+- **orElseThrow**: devolverá el valor si está presente y si invocará la función que le pasemos, la cual tiene que devolver una excepción y lanzará dicha excepción. 
+Esto nos ayudará a trabajar en conjunción con APIs que todavía usen excepciones.
+
+```java
+public T orElse(T other);
+public T orElseGet(Function f);
+public <X extends Throwable> T orElseThrow(Function f);
+```
+
+### Uso de `Optional` de forma funcional
+
+El uso de `Optional` está pensado para usarse de forma funcional, no de forma imperativa.
+Si quisieramos chequear los datos de la duración de las canciones de un album usando `Optional`, según bajamos de niveles
+de anidamiento la cosa se complica, dejando de ser práctica:
+
+```java
+private static Optional<Double> getDurationOfAlbumWithName(String name) {
+    Album album;
+    Optional<Album> albumOptional = getAlbum(name);
+    if (albumOptional.isPresent()) {
+        album = albumOptional.get();
+        Optional<List<Track>> tracksOptional = getAlbumTracks(album.getName());
+        double duration = 0;
+        if (tracksOptional.isPresent()) {
+            List<Track> tracks = tracksOptional.get();
+            for (Track track : tracks) {
+                duration += track.getDuration();
+            }
+            return Optional.of(duration);
+        } else {
+            return Optional.empty();
+        }
+    } else {
+        return Optional.empty();
+    }
+}
+```
+
+El uso **funcional** de `Optional` y lambdas permite que este codigo se simplifique usando los metodos de encadenamiento y
+de finalización, de forma que de no encontrar nada se devuelve un valor concreto
+
+```java
+private static double getDurationOfAlbumWithName(String name) {
+    return getAlbum(name)
+            .flatMap((album) -> getAlbumTracks(album.getName()))
+            .map((tracks) -> getTracksDuration(tracks))
+            .orElse(0.0);
+}
 ```
