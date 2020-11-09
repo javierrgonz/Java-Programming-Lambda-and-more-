@@ -2044,7 +2044,7 @@ try(bufferedReader2){
 
 # JAVA 10
 
-## `var` type
+## Leccion 11 - `var` type
 
 Desde Java 10 se puede eliminar la definición de tipo expresa al crear una variable
 Para ello:
@@ -2060,10 +2060,97 @@ var numbers; // Al no poder inferir el tipo no compila
 
 # JAVA 11
 
-## `var` with lambda
+## Leccion 12 - `var` with lambda
 
 A partir de java 11 se permite el uso de `var` en funciones lambda:
 
 ```java
 (var j, var i) -> i + j;
+```
+
+## Leccion 13 - http client API
+
+Java 11 introdujo un nuevo API para http. Por defecto utilizará HTTP/2, aunque la request se rebaja a HTTP/1.1
+en caso de que el server no la admita.
+
+La nueva API utiliza streams reactivos para trabajar de forma asíncrona con request y responses.
+También se pueden usar para enviar request y recibir responses sincronizadamente.
+
+```java
+HttpClient httpClient = HttpClient.newHttpClient();
+HttpClient httpClient = HttpClient.newBuilder().build();
+```
+
+El nuevo cliente consiste en tres clases principales:
+- **HttpClient**: Se usa para enviar una request y recibir la response
+- **HttpRequest**: Encapsula los detalles del recurso solicitado, incluyendo la URI
+- **HttpResponse**: Encapsula la response del server
+
+```java
+HttpClient client = HttpClient.newHttpClient();
+HttpRequest request = HttpRequest.newBuilder().uri(URI.create("https://www.ldapsoft.com")).build();
+HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+```
+
+De forma similar se pueden realizar llamadas Asíncronas:
+
+```java
+HttpClient client = HttpClient.newHttpClient();
+HttpRequest request = HttpRequest.newBuilder().uri(URI.create("https://www.ldapsoft.com")).build();
+CompletableFuture<Void> response =
+        client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+              .thenApply(HttpResponse::body)
+              .thenAccept(System.out::println);
+response.get();
+```
+
+# JAVA 12
+
+## Leccion 12 - Switch expressions (mejoras)
+
+Se introdujeron para mejorar las switch. Los `break` dejan de ser necesarios, hay menos código innecesario
+Se permite agrupar selecciones para ejecutar sentencias a la vez:
+ 
+```java
+String month="JANUARY";
+switch (month){
+    case "JANUARY", "FEBURARY", "MARCH" -> System.out.println("FIRST QUARTER");
+    case "APRIL", "MAY", "JUNE" -> System.out.println("SECOND QUARTER");
+    case "JULY", "AUGUST", "SEPTEMBER"-> System.out.println("THIRD QUARTER");
+    case "OCTOBER", "NOVEMBER", "DECEMBER" -> System.out.println("FOURTH QUARTER");
+    default -> System.out.println("UNKNOWN QUARTER");
+}
+``` 
+
+También se permite incluir acciones en los `case`, usando la palabra reservada `yield` para que el `switch` devuelva un resultado,
+siendo el equivalente a un `return` de un método:
+
+```java
+String month="JANUARY";
+
+// Evaluamos la variable, pudiendo realizar selecciones multiples en los case
+String quarter = switch(month){
+    case "JANUARY", "FEBURARY", "MARCH" ->{
+        var isLeapYear = LocalDate.now().isLeapYear();
+        yield (isLeapYear ? "FIRST QUARTER - LEAP YEAR": "FIRST QUARTER");
+    }
+    case "APRIL", "MAY", "JUNE" -> "SECOND QUARTER"; 
+    case "JULY", "AUGUST", "SEPTEMBER" -> "THIRD QUARTER"; 
+    case "OCTOBER", "NOVEMBER", "DECEMBER" -> "FOURTH QUARTER"; 
+    default -> "UNKNOWN QUARTER"; 
+}; 
+```
+  
+# JAVA 13
+
+## Lección 13 - Textblocks
+
+Java 13 introdujo la definición de bloques de textos mediante el uso de las triples comillas dobles:
+
+```java
+String st1 = """
+             Hello World
+             Using 
+             text blocks !
+             """;
 ```
