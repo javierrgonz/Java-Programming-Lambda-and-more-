@@ -1559,7 +1559,7 @@ private static double getDurationOfAlbumWithName(String name) {
 }
 ```
 
-## Lección - Default / Static methods
+## Lección 5 - Default / Static methods
 
 Con Java 8 se incorpora la opción de que las interfaces dispongan de métodos `default` y métodos `static`, implementando 
 el cuerpo por defecto del método. En caso de los métodos por `default`, el comportamiento puede ser sobreescrito por las
@@ -1627,3 +1627,144 @@ public class MultipleIneritanceExampleB implements InterfaceA, InterfaceB {
 }
 ```
 
+## Lección 6 - New Date/Time libraries
+
+Se ha incluido una nueva API para el trabajo con fechas en Java, dado que tradicionalmente la API de fechas ha sido bastante
+caótica siempre. Principalmente se han incluido dos clases principales:
+
+- **Local**: API simplificada sin complicaciones de manejo de timezones
+- **Zoned**: API especializada en trabajo con varias timezones
+
+```java
+// Ejemplos básicos
+LocalDate localDate = LocalDate.now();
+LocalTime localTime = LocalTime.now();
+LocalDateTime localDateTime = LocalDateTime.now();
+```
+
+### LocalDate
+
+- **Creación**
+  - Con fecha actual: `LocalDate localDate = LocalDate.now();`
+  - Indicando dia del año: `LocalDate localDate = LocalDate.ofYearDay(2018, 35);`
+  - Indicando fecha completa: `LocalDate localDate = LocalDate.of(2018, 05, 23);`
+  
+- **Obtención de datos**
+  - Nombre del Mes: `localDate.getMonth()`
+  - Numero de mes: `localDate.localDate.getMonthValue()`
+  - Numero de mes (2): `localDate.get(ChronoField.MONTH_OF_YEAR)`
+  - Dia de la semana: `localDate.getDayOfWeek()`
+  - Dia del año: `localDate.getDayOfYear()`
+
+- **Modificación**:
+
+LocalDate es un objeto **inmutable** por lo que a no ser que le asignemos el valor expresamente no cambiará su valor
+
+  - Sumar dias: `localDate = localDate.plusDays(4);`
+  - Sumar meses: `localDate.plusMonths(2));`
+  - Sumar años: `localDate.plusYears(2));`
+  - Restar días: `localDate.minusDays(10));`
+  - Establecer año: `localDate.withYear(2023));`
+  - Establecer año (2): `localDate.with(ChronoField.YEAR, 2025));`
+  - Establecer fecha con TemporalAdjusters: `localDate.with(TemporalAdjusters.lastDayOfMonth()));`
+ 
+ ### LocalTime
+ 
+ - **Creación**:
+ 
+  - Con fecha actual: `LocalTime localTime = LocalTime.now();`
+  - Estableciendo fecha: `localTime = LocalTime.of (15, 18);`
+  - Estableciendo fecha (2): `localTime = LocalTime.of(15, 18, 22);`
+  - Estableciendo fecha (3): `localTime = LocalTime.of(15,18,23,22222222);`
+
+- **Obtención**:
+
+  - Horas: `localTime.getHour()`
+  - Minutos: `localTime.getMinute()`
+  - Minutos del presente dia: `localTime.get(ChronoField.MINUTE_OF_DAY))`
+  - Segundos: `localTime.getSecond()`
+  - Segundos del presente dia: `localTime.get(ChronoField.SECOND_OF_DAY))`
+  - NanoSegundos: `localTime.getNano()`
+
+- **Modificación**:
+
+LocalTime es un objeto **inmutable** por lo que a no ser que le asignemos el valor expresamente no cambiará su valor
+
+  - Suma horas: `localTime.plusHours(2));`
+  - Suma minutos: `localTime.plusMinutes(22));`
+  - Suma segundos: `localTime.plusSeconds(30));`
+  - Suma nanosegundos: `localTime.plusNanos(222222));`
+  - Resta horas: `localTime.minusHours(2));`
+  - Resta horas (2): `localTime.minus(2, ChronoUnit.HOURS));`
+  - Establecimiento de hora en medianoche: `localTime.with(LocalTime.MIDNIGHT));`
+  - Establecimiento hora del dia: `localTime.with(ChronoField.HOUR_OF_DAY, 4));`
+
+### LocalDateTime
+
+- **Creación**
+
+  - Actual: `LocalDateTime localDateTime = LocalDateTime.now();`
+  - Con fecha y hora expresa: `LocalDateTime.of(2022, 1, 12, 12,12,12);`
+  - Con fecha y hora expresa (2): `LocalDateTime.of(LocalDate.now(), LocalTime.now());`
+
+- **Obtención**:
+
+  - Hora: `localDateTime.getHour()`
+  - Mes: `localDateTime.getMonth()`
+  - Minuto: `localDateTime.getMinute()`
+  - Segundos: `localDateTime.getSecond()`
+  - Mes del año: `localDateTime.get(ChronoField.MONTH_OF_YEAR)`
+
+- **Modificación**:
+
+  - Sumar años: `localDateTime.plusYears(3)`
+  - Sumar horas: `localDateTime.plusHours(4)`
+  - Sumar minutos: `localDateTime.plusMinutes(60)`
+  - Establecimiento de hora: `localDateTime.with(ChronoField.HOUR_OF_DAY,3))`
+  - Establecimiento de hora a la medianoche: `localDateTime.with(LocalTime.MIDNIGHT)`
+
+### Conversion de LocalDateTime a Date / Time
+
+- LocalDateTime a LocalDate: `localDateTime.toLocalDate()` 
+- LocalDateTime a LocalTime: `localDateTime.toLocalTime()`
+
+### Instant / Duration
+
+Instant se define como el instante en el continuo datetime especificado como el numero de milisegundos
+desde el 1/1/1970 hasta ahora
+
+Representa el numero de nanosegundos en la linea de tiempo. Se suele usar para representar tiempo máquina
+
+- `Instant` genera timestamps 
+  - **Creacion**: `Instant timestamp = Instant.now()`
+  - **Modificacion**: `Instant timestamp1 = Instant.now().plusSeconds(3600);`
+  - Puede usarse para generar LocalDateTime: `LocalDateTime.ofInstant(timestamp1, ZoneId.systemDefault());`  
+
+- `Duration` representa intervalos de tiempo: 
+
+  - **Creación**: `Duration duration = Duration.between(timestamp1,timestamp);`
+  - **Uso**: `duration.toSeconds()`
+
+### TimeZones - ZonedDateTime, ZoneId
+
+- Obtener las timezones: `ZoneId.getAvailableZoneIds().stream().forEach(System.out::println);`
+- Establecer una ZoneDateTime según la timeZone: `ZonedDateTime.now(ZoneId.of("Europe/London")));`
+- Conversión a ZoneDateTime:
+    ```java
+    LocalDateTime localDateTime = LocalDateTime.now();
+    ZonedDateTime zonedDateTime = localDateTime.atZone(ZoneId.of("America/New_York"));
+    localDateTime.atOffset(ZoneOffset.ofHours(-10));
+    ```
+
+### Conversiones con anteriores versiones de la API
+
+- Date a LocalDateTime:
+    ```java
+    Date date = new Date();
+    LocalDateTime localDateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+    ```
+- java.sql.Date a LocalDate:
+    ```java
+    java.sql.Date dateSql = new java.sql.Date(System.currentTimeMillis());
+    LocalDate localDate = dateSql.toLocalDate();
+    ```
