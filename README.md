@@ -3,6 +3,10 @@ Java Programming, Lambda and more (Java 13, 12, 11, 10, 9,8) course
 
 WEB: https://www.udemy.com/course/java-latest-programming-from-zero-java13-java12-java11-java10-java9-j8
 
+- - -
+
+# JAVA 8
+
 ## Lección 1 Expresiones Lambda
 
 Las expresiones lambda tienen las siguientes partes:
@@ -1768,3 +1772,225 @@ Representa el numero de nanosegundos en la linea de tiempo. Se suele usar para r
     java.sql.Date dateSql = new java.sql.Date(System.currentTimeMillis());
     LocalDate localDate = dateSql.toLocalDate();
     ```
+ 
+
+# JAVA 9
+ 
+## Leccion 7 - JShell
+
+JShell/REPL es una herramienta interactiva para aprender Java y prototipado de código Java. Evalua declaraciones, órdenes
+y expresiones según se van introduciendo, y muestra los resultados inmediatamente.
+REPL se puede usar para realiza pruebas, test, snippets....
+Requiere de al menos Java 9 y la variable de entorno JAVA_HOME definida
+
+`$ jshell`: Inicia el JShell REPL
+`jshell> / <comando>`: Ejecuta un comando JShell dado
+`jshell> / exit`: Salir de JShell
+`jshell> / help`: Ver una lista de comandos de JShell
+`jshell> <java_expression>`: Evalúa la expresión Java dada (punto y coma opcional)
+`jshell> / vars O / métodos O / tipos`: vea una lista de variables, métodos o clases, respectivamente.
+`jshell> / open <archivo>`: lee un archivo como entrada al shell
+`jshell> / edit <identifier>`: - edita un fragmento en el editor de conjuntos
+`jshell> / set editor <comando>`: establece el comando que se usará para editar fragmentos de código usando / editar
+`jshell> / drop <identifier>`: borra un fragmento
+`jshell> / reset`: Restablece la JVM y borra todos los fragmentos
+
+Los siguientes paquetes se importan automáticamente cuando se inicia JShell:
+
+```java
+import java.io.*
+import java.math.*
+import java.net.*
+import java.nio.file.*
+import java.util.*
+import java.util.concurrent.*
+import java.util.function.*
+import java.util.prefs.*
+import java.util.regex.*
+import java.util.stream.*
+```
+
+### Expresiones
+
+Dentro de JShell, puede evaluar expresiones de Java, con o sin punto y coma. Estos pueden ir desde expresiones y declaraciones básicas hasta expresiones más complejas:
+
+```java
+jshell> 4+2
+jshell> System.out.printf("I am %d years old.\n", 421)
+```
+
+Los bucles y los condicionales también están bien:
+
+```java
+jshell> for (int i = 0; i<3; i++) {
+   ...> System.out.println(i);
+   ...> }
+```
+
+Es importante tener en cuenta que las expresiones dentro de los bloques deben tener punto y coma.
+
+### Variables
+
+Puedes declarar variables locales dentro de JShell:
+
+```java
+jshell> String s = "hi"
+jshell> int i = s.length
+```
+
+Las variables se pueden redeclar con diferentes tipos; Esto es perfectamente válido en JShell:
+
+```java
+jshell> String var = "hi"
+jshell> int var = 3
+```
+
+Para ver una lista de variables, ingrese `/vars` en el indicador de JShell.
+
+### Métodos y Clases
+
+Puedes definir métodos y clases dentro de JShell:
+
+```java
+jshell> void speak() {
+   ...> System.out.println("hello");
+   ...> }
+
+jshell> class MyClass {
+   ...> void doNothing() {}
+   ...> }
+```
+
+No se requieren modificadores de acceso. Al igual que con otros bloques, se requieren puntos y coma dentro de los cuerpos de los métodos. Tenga en cuenta que, al igual que con las variables, es posible redefinir los métodos y las clases. Para ver una lista de métodos o clases, ingrese /methods o /types en el indicador de JShell, respectivamente.
+
+### Editando Fragmentos
+
+La unidad básica de código utilizada por JShell es el fragmento o la entrada de origen . Cada vez que declara una variable local o define un método o clase local, crea un fragmento de código cuyo nombre es el identificador de la variable / método / clase. En cualquier momento, puede editar un fragmento de código que haya creado con el comando /edit . Por ejemplo, digamos que he creado la clase Foo con una sola bar método:
+
+```java
+jshell> class Foo {
+   ...> void bar() {
+   ...> }
+   ...> }
+```
+
+Ahora, quiero rellenar el cuerpo de mi método. En lugar de reescribir toda la clase, puedo editarla:
+
+```java
+jshell> /edit Foo
+```
+
+De forma predeterminada, aparecerá un editor de swing con las funciones más básicas posibles. Sin embargo, puedes cambiar el editor que JShell usa:
+
+```java
+jshell> /set editor emacs
+jshell> /set editor vi
+jshell> /set editor nano
+jshell> /set editor -default
+```
+
+Tenga en cuenta que si la nueva versión del fragmento de código contiene errores de sintaxis, es posible que no se guarde. Del mismo modo, un fragmento de código solo se crea si la declaración / definición original es sintácticamente correcta; lo siguiente no funciona:
+
+```java
+jshell> String st = String 3
+//error omitted
+jshell> /edit st
+|  No such snippet: st
+```
+
+Sin embargo, los fragmentos de código pueden compilarse y, por lo tanto, ser editables a pesar de ciertos errores de tiempo de compilación, como los tipos que no coinciden, los siguientes trabajos:
+
+```java
+jshell> int i = "hello"
+//error omitted
+jshell> /edit i
+```
+
+Finalmente, los fragmentos de código se pueden eliminar con el comando `/drop` :
+
+```java
+jshell> int i = 13
+jshell> /drop i
+jshell> System.out.println(i)
+|  Error:
+|  cannot find symbol
+|    symbol:   variable i
+|  System.out.println(i)
+|
+```
+
+Para eliminar todos los fragmentos de código, restableciendo así el estado de la JVM, use `\reset` :
+
+```java
+jshell> int i = 2
+jshell> String s = "hi"
+jshell> /reset
+|  Resetting state.
+
+jshell> i
+|  Error:
+|  cannot find symbol
+|    symbol:   variable i
+|  i
+|  ^
+
+jshell> s
+|  Error:
+|  cannot find symbol
+|    symbol:   variable s
+|  s
+|  ^
+```
+
+## Lección 8 - Java Modules
+
+Saber mas: 
+- https://www.arquitecturajava.com/java-9-modules/
+- https://www.adictosaltrabajo.com/2017/10/30/modularidad-en-java-9-12/
+- https://www.adictosaltrabajo.com/2017/11/16/modularidad-en-java-9-22/
+
+Java 9 introdujo una capa de abtracción en lo alto de los paquetes que se llama `Java Platform Module System`
+Los módulos de Java proporcionan una mayor encapsulación de las clases contenidas en un paquete y las librerías. 
+Esta encapsulación evita que una aplicación u otra librería haga uso y dependa de clases y paquetes de los que no debería 
+lo que mejora la compatibilidad con versiones futuras.
+
+Antes del sistema de módulos de Java la librería de tiempo de ejecución consistía en un gran archivo `rt.jar` con un 
+tamaño de más de 60 MiB. Este archivo contiene la mayor parte de clases de la plataforma en forma de monolito. 
+Para conseguir mayor flexibilidad y ser una plataforma de futuro se decidió modularizar el JDK.
+
+Con el tiempo las dependencias entre los propios paquetes y clases de la API de Java estaba enmarañada, con Java 9 las 
+dependencias entre paquetes se ha simplificado en gran medida.
+
+Los beneficios son:
+
+- **Configuración confiable**: el sistema de módulos comprueba si una combinación de módulos satisface todas las dependencias antes de compilar o ejecutar una aplicación.
+- **Encapsulación fuerte**: se evitan dependencias sobre detalles internos de implementación.
+- **Desarrollo escalable**: se crean límites entre el equipo que desarrolla un módulo y el que lo usa.
+- **Optimización**: dado que el sistema de módulos sabe que módulos necesita cada uno solo se consideran los necesarios mejorándose tiempos de inicio y memoria consumida.
+- **Seguridad**: la encapsulación y optimización limita la superficie de ataque.
+
+Los comandos para compilar y ejecutar el ejemplo directamente con los comandos javac y java si cambian, ahora se usa en 
+vez de classpath la opción module-path y se indica la clase del módulo que contiene el método main del programa
+
+```bash
+javac -d build src/helloworld/module-info.java src/helloworld/io/github/picodotdev/blogbitix/java9/helloworld/Main.java
+java --module-path build --module helloworld/io.github.picodotdev.blogbitix.java9.helloworld.Main
+```
+
+En las nuevas aplicaciones modulares, se crea nuevo archivo `module-info.java` que incorpora
+las dependencias modulares entre proyectos: Si por ejemplo tenemos un proyecto `com.modulos.principal` que hace uso de clases en los proyectos
+`com.modulos.producer` y `com.modulos.consumer`, este archivo `module-info.java` tendria la estructura:
+
+```java
+module com.modulos.principal {}
+    requires com.modulos.producer;
+    requires com.modulos.consumer;
+```
+
+Igualmente, cada modulo generará su `module-info.java`, indicando que clase se exporta:
+
+```java
+module com.modulos.producer {
+    exports com.modules.producer;
+}
+```
